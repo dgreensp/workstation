@@ -586,20 +586,25 @@ define("demos/popover/index", ["require", "exports", "react", "react-dom", "reac
     Object.defineProperty(exports, "__esModule", { value: true });
     react_5 = __importDefault(react_5);
     react_dom_1 = __importDefault(react_dom_1);
+    function usePopoverComputeShown(forceOpen) {
+        const isTargetHoveredRef = LiveRef_3.useLiveRef(false);
+        const isPopoverHoveredRef = LiveRef_3.useLiveRef(false);
+        const ComputeShown = hooks_3.useComputingWrapper(() => {
+            const isTargetHovered = LiveRef_3.useLiveRefState(isTargetHoveredRef);
+            const isPopoverHovered = LiveRef_3.useLiveRefState(isPopoverHoveredRef);
+            const isForceOpen = forceOpen ? LiveRef_3.useLiveRefState(forceOpen) : false;
+            return isTargetHovered || isPopoverHovered || isForceOpen;
+        });
+        const result = [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef];
+        return result;
+    }
     function ParagraphWithPopover({ settings }) {
         const showArrow = LiveRef_3.useLiveRefState(settings.showArrow);
         const [popperTargetRef, BoundPopper] = popper_1.usePopper();
-        const targetHovered = LiveRef_3.useLiveRef(false);
-        const targetHover = hover_1.useHover(targetHovered, { intent: { timeout: 1000 } });
-        const popoverHovered = LiveRef_3.useLiveRef(false);
-        const popoverHover = hover_1.useHover(popoverHovered);
+        const [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef] = usePopoverComputeShown(settings.forceOpen);
+        const targetHover = hover_1.useHover(isTargetHoveredRef, { intent: { timeout: 1000 } });
         const targetRef = hooks_3.useAllCallbacks(popperTargetRef, targetHover);
-        const ComputeShown = hooks_3.useComputingWrapper(() => {
-            const isTargetHovered = LiveRef_3.useLiveRefState(targetHovered);
-            const isPopoverHovered = LiveRef_3.useLiveRefState(popoverHovered);
-            const forceOpen = LiveRef_3.useLiveRefState(settings.forceOpen);
-            return isTargetHovered || isPopoverHovered || forceOpen;
-        });
+        const popoverHover = hover_1.useHover(isPopoverHoveredRef);
         return react_5.default.createElement(react_5.default.Fragment, null,
             react_5.default.createElement("p", null,
                 "This link has a ",

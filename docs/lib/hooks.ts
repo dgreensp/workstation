@@ -24,9 +24,12 @@ export function useOnce<T>(compute: () => T): T {
   return ref.current.result;
 }
 
+export type ComputingWrapperProps<Arg, Props = {}> = Props & { children: (arg: Arg) => React.ReactElement | null };
+export type ComputingWrapper<Arg, Props = {}> = (props: ComputingWrapperProps<Arg,Props>) => React.ReactElement | null;
+
 // TODO: document
-export function useComputingWrapper<Arg, Props = {}>(func: (props: Props) => Arg) {
-  return useOnce(() => function (props: Props & { children: (arg: Arg) => React.ReactElement | null }) {
+export function useComputingWrapper<Arg, Props = {}>(func: (props: Props) => Arg): ComputingWrapper<Arg,Props> {
+  return useOnce(() => function (props: ComputingWrapperProps<Arg,Props>) {
     return props.children(func(props));
   });
 }

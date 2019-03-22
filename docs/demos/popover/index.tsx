@@ -2,27 +2,35 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Jumbotron, Fade, PopoverBody } from 'reactstrap';
 import { LiveRef, useLiveRef, useLiveRefState, DOMCallback } from 'lib/LiveRef';
-import { useAllCallbacks, useComputingWrapper, usePromise } from 'lib/hooks';
+import { useAllCallbacks, useComputingWrapper, usePromise, ComputingWrapper } from 'lib/hooks';
 import { useHover } from 'lib/hover';
 import { usePopper, PopperInner } from 'lib/popper';
 import { Settings, useSettings, SettingsForm } from './settings';
+
+function usePopoverComputeShown(forceOpen?: LiveRef<boolean>) {
+  const isTargetHoveredRef = useLiveRef(false);
+  const isPopoverHoveredRef = useLiveRef(false);
+
+  const ComputeShown = useComputingWrapper(() => {
+    const isTargetHovered = useLiveRefState(isTargetHoveredRef);
+    const isPopoverHovered = useLiveRefState(isPopoverHoveredRef);
+    const isForceOpen = forceOpen ? useLiveRefState(forceOpen): false;
+    return isTargetHovered || isPopoverHovered || isForceOpen;
+  });
+
+  const result: [ComputingWrapper<boolean>, LiveRef<boolean>, LiveRef<boolean>] =
+    [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef];
+  return result;
+}
 
 function ParagraphWithPopover({ settings }: { settings: Settings }) {
   const showArrow = useLiveRefState(settings.showArrow);
 
   const [popperTargetRef, BoundPopper] = usePopper();
-  const targetHovered: LiveRef<boolean> = useLiveRef(false);
-  const targetHover: DOMCallback = useHover(targetHovered, { intent: { timeout: 1000 } });
-  const popoverHovered: LiveRef<boolean> = useLiveRef(false);
-  const popoverHover: DOMCallback = useHover(popoverHovered);
+  const [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef] = usePopoverComputeShown(settings.forceOpen);
+  const targetHover: DOMCallback = useHover(isTargetHoveredRef, { intent: { timeout: 1000 } });
   const targetRef: DOMCallback = useAllCallbacks(popperTargetRef, targetHover);
-
-  const ComputeShown = useComputingWrapper(() => {
-    const isTargetHovered = useLiveRefState(targetHovered);
-    const isPopoverHovered = useLiveRefState(popoverHovered);
-    const forceOpen = useLiveRefState(settings.forceOpen);
-    return isTargetHovered || isPopoverHovered || forceOpen;
-  });
+  const popoverHover: DOMCallback = useHover(isPopoverHoveredRef);
 
   return <>
     <p>This link has a <a ref={targetRef} href="#">popover</a></p>
