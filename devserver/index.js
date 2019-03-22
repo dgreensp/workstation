@@ -17,7 +17,7 @@ http.createServer(function (request, response) {
         throw new Error('not a /workstation path');
       }
       // this is not secure; TODO use a real webserver
-      let filePath = 'docs' + urlPath.slice('/workstation').length;
+      let filePath = 'docs' + urlPath.slice('/workstation'.length);
       if (urlPath.slice(-1) === '/') {
         filePath += 'index.html';
       }

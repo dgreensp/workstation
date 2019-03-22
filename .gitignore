@@ -1,3 +1,5 @@
-package-lock.json # don't favor npm or yarn unless we have to
+# we're not using npm or yarn except to install typescript in dev, so don't favor either one
+package-lock.json
+yarn.lock
 
-public/bundle.js*
+node_modules
