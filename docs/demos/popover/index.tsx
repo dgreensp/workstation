@@ -23,21 +23,29 @@ function usePopoverComputeShown(forceOpen?: LiveRef<boolean>) {
   return result;
 }
 
+function usePopoverHoverLogic(popperTargetRef: DOMCallback, forceOpen?: LiveRef<boolean>) {
+  const [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef] = usePopoverComputeShown(forceOpen);
+  const targetHover: DOMCallback = useHover(isTargetHoveredRef, { intent: { timeout: 1000 } });
+  const targetRef: DOMCallback = useAllCallbacks(popperTargetRef, targetHover);
+  const popoverRef: DOMCallback = useHover(isPopoverHoveredRef);
+
+  const result: [ComputingWrapper<boolean>, DOMCallback, DOMCallback] =
+    [ComputeShown, targetRef, popoverRef];
+  return result;
+}
+
 function ParagraphWithPopover({ settings }: { settings: Settings }) {
   const showArrow = useLiveRefState(settings.showArrow);
 
   const [popperTargetRef, BoundPopper] = usePopper();
-  const [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef] = usePopoverComputeShown(settings.forceOpen);
-  const targetHover: DOMCallback = useHover(isTargetHoveredRef, { intent: { timeout: 1000 } });
-  const targetRef: DOMCallback = useAllCallbacks(popperTargetRef, targetHover);
-  const popoverHover: DOMCallback = useHover(isPopoverHoveredRef);
+  const [ComputeShown, targetRef, popoverRef] = usePopoverHoverLogic(popperTargetRef, settings.forceOpen);
 
   return <>
     <p>This link has a <a ref={targetRef} href="#">popover</a></p>
     <ComputeShown>
       {shown =>
         <Fade in={shown} mountOnEnter unmountOnExit enter={false}>
-          <BoundPopper placement="bottom" innerRef={popoverHover}>
+          <BoundPopper placement="bottom" innerRef={popoverRef}>
             {args => <PopperInner args={args} showArrow={showArrow}>
               <PopoverBody>
                 <h1>Woohoo</h1>

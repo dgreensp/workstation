@@ -598,19 +598,24 @@ define("demos/popover/index", ["require", "exports", "react", "react-dom", "reac
         const result = [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef];
         return result;
     }
+    function usePopoverHoverLogic(popperTargetRef, forceOpen) {
+        const [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef] = usePopoverComputeShown(forceOpen);
+        const targetHover = hover_1.useHover(isTargetHoveredRef, { intent: { timeout: 1000 } });
+        const targetRef = hooks_3.useAllCallbacks(popperTargetRef, targetHover);
+        const popoverRef = hover_1.useHover(isPopoverHoveredRef);
+        const result = [ComputeShown, targetRef, popoverRef];
+        return result;
+    }
     function ParagraphWithPopover({ settings }) {
         const showArrow = LiveRef_3.useLiveRefState(settings.showArrow);
         const [popperTargetRef, BoundPopper] = popper_1.usePopper();
-        const [ComputeShown, isTargetHoveredRef, isPopoverHoveredRef] = usePopoverComputeShown(settings.forceOpen);
-        const targetHover = hover_1.useHover(isTargetHoveredRef, { intent: { timeout: 1000 } });
-        const targetRef = hooks_3.useAllCallbacks(popperTargetRef, targetHover);
-        const popoverHover = hover_1.useHover(isPopoverHoveredRef);
+        const [ComputeShown, targetRef, popoverRef] = usePopoverHoverLogic(popperTargetRef, settings.forceOpen);
         return react_5.default.createElement(react_5.default.Fragment, null,
             react_5.default.createElement("p", null,
                 "This link has a ",
                 react_5.default.createElement("a", { ref: targetRef, href: "#" }, "popover")),
             react_5.default.createElement(ComputeShown, null, shown => react_5.default.createElement(reactstrap_2.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
-                react_5.default.createElement(BoundPopper, { placement: "bottom", innerRef: popoverHover }, args => react_5.default.createElement(popper_1.PopperInner, { args: args, showArrow: showArrow },
+                react_5.default.createElement(BoundPopper, { placement: "bottom", innerRef: popoverRef }, args => react_5.default.createElement(popper_1.PopperInner, { args: args, showArrow: showArrow },
                     react_5.default.createElement(reactstrap_2.PopoverBody, null,
                         react_5.default.createElement("h1", null, "Woohoo"),
                         react_5.default.createElement("p", null, "This is all inside the popover.")))))));
