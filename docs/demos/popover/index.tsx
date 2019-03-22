@@ -1,12 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Fade, PopoverBody } from 'reactstrap';
+import { Jumbotron, Fade, PopoverBody } from 'reactstrap';
 import { LiveRef, useLiveRef, useLiveRefState, DOMCallback } from 'lib/LiveRef';
-import { useAllCallbacks, useComputingWrapper } from 'lib/hooks';
+import { useAllCallbacks, useComputingWrapper, usePromise } from 'lib/hooks';
 import { useHover } from 'lib/hover';
 import { usePopper, PopperInner } from 'lib/popper';
+import { Settings, useSettings, SettingsForm } from './settings';
 
-function App() {
+function ParagraphWithPopover({ settings }: { settings: Settings }) {
+  const showArrow = useLiveRefState(settings.showArrow);
+
   const [popperTargetRef, BoundPopper] = usePopper();
   const targetHovered: LiveRef<boolean> = useLiveRef(false);
   const targetHover: DOMCallback = useHover(targetHovered, { intent: { timeout: 1000 } });
@@ -17,21 +20,20 @@ function App() {
   const ComputeShown = useComputingWrapper(() => {
     const isTargetHovered = useLiveRefState(targetHovered);
     const isPopoverHovered = useLiveRefState(popoverHovered);
-    return isTargetHovered || isPopoverHovered;
+    const forceOpen = useLiveRefState(settings.forceOpen);
+    return isTargetHovered || isPopoverHovered || forceOpen;
   });
-  
+
   return <>
-    <main role="main" className="container mt-5">
-      <h1>Hello, Reactstrap!</h1>
-      <p>This link has a <a ref={targetRef} href="#">popover</a></p>
-    </main>
+    <p>This link has a <a ref={targetRef} href="#">popover</a></p>
     <ComputeShown>
       {shown =>
         <Fade in={shown} mountOnEnter unmountOnExit enter={false}>
           <BoundPopper placement="bottom" innerRef={popoverHover}>
-            {args => <PopperInner args={args} showArrow={false}>
+            {args => <PopperInner args={args} showArrow={showArrow}>
               <PopoverBody>
                 <h1>Woohoo</h1>
+                <p>This is all inside the popover.</p>
               </PopoverBody>
             </PopperInner>
             }
@@ -40,6 +42,30 @@ function App() {
       }
     </ComputeShown>
   </>
+}
+
+function App() {
+  const settings = useSettings();
+  const code = usePromise(getCode);
+
+  return <main role="main" className="container mt-5">
+    <Jumbotron>
+      <h1>Hello, Reactstrap!</h1>
+      <ParagraphWithPopover settings={settings} />
+    </Jumbotron>
+    <h4>Settings:</h4>
+    <SettingsForm settings={settings} />
+    <h4>Code:</h4>
+    <pre className="small"><code>
+      {code}
+    </code></pre>
+  </main>
+}
+
+async function getCode(): Promise<string> {
+  const response = await fetch('index.tsx');
+  const text = await response.text();
+  return text;
 }
 
 const root = document.getElementById('root');

@@ -80,6 +80,6 @@ export function useLiveRefState<T>(liveRef: LiveRef<T>): T {
     setValue(liveRef._current); // catch any changes since render time
     liveRef._listeners.add(setValue);
     return () => { liveRef._listeners.delete(setValue) };
-  }, []);
+  }, [liveRef]);
   return value;
 }

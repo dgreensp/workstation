@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 // This module is for utility hooks that are of totally general use.
 
@@ -29,4 +29,10 @@ export function useComputingWrapper<Arg, Props = {}>(func: (props: Props) => Arg
   return useOnce(() => function (props: Props & { children: (arg: Arg) => React.ReactElement | null }) {
     return props.children(func(props));
   });
+}
+
+export function usePromise<T>(getPromise: () => Promise<T>): T | null {
+  const [value, setValue] = useState<T | null>(null);
+  useOnce(() => getPromise().then(v => setValue(v)));
+  return value;
 }
