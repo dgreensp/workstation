@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "module": "amd",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "jsx": "react",
+    "outFile": "public/bundle.js",
+    "rootDir": "public",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["public/third-party/*"],
+      "lib/*": ["public/lib/*"]
+    }
+  },
+  "include": [
+    "public"
+  ],
+  "exclude": [
+    "public/bundle.js"
+  ]
+}

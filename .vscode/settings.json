@@ -1,0 +1,10 @@
+{
+    "editor.tabSize": 2,
+    "eslint.enable": false,
+    "tslint.enable": false,
+    "files.exclude": {
+        "package-lock.json": true,
+        "yarn.lock": true
+    },
+    "typescript.tsdk": "node_modules/typescript/lib"
+}

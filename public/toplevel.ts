@@ -1,0 +1,1 @@
+import "./third-party/almond" // minimal AMD loader

@@ -1,0 +1,3 @@
+package-lock.json # don't favor npm or yarn unless we have to
+
+public/bundle.js*
