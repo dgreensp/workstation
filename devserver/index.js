@@ -13,8 +13,11 @@ http.createServer(function (request, response) {
 
   if (httpMethod === 'GET') {
     try {
+      if (!urlPath.startsWith('/workstation')) {
+        throw new Error('not a /workstation path');
+      }
       // this is not secure; TODO use a real webserver
-      let filePath = 'public' + urlPath;
+      let filePath = 'docs' + urlPath.slice('/workstation').length;
       if (urlPath.slice(-1) === '/') {
         filePath += 'index.html';
       }

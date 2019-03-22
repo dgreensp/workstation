@@ -3,7 +3,7 @@
 CURL='curl --silent --show-error --fail --write-out %{url_effective}\n'
 
 (
-  cd `dirname "$0"`/../public
+  cd `dirname "$0"`/../docs
 
   rm -rf third-party/*
   cd third-party

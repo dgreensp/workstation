@@ -8,19 +8,19 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react",
-    "outFile": "public/bundle.js",
-    "rootDir": "public",
+    "outFile": "docs/bundle.js",
+    "rootDir": "docs",
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "*": ["public/third-party/*"],
-      "lib/*": ["public/lib/*"]
+      "*": ["docs/third-party/*"],
+      "lib/*": ["docs/lib/*"]
     }
   },
   "include": [
-    "public"
+    "docs"
   ],
   "exclude": [
-    "public/bundle.js"
+    "docs/bundle.js"
   ]
 }
