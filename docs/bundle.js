@@ -720,126 +720,170 @@ define("lib/live", ["require", "exports", "react"], function (require, exports, 
     }
     exports.combineReceivers = combineReceivers;
 });
-define("demos/popover-classes/settings", ["require", "exports", "react", "reactstrap", "lib/live"], function (require, exports, react_7, reactstrap_3, live_1) {
+define("demos/popover-classes/Popover", ["require", "exports", "react", "reactstrap", "lib/hover", "lib/live", "react-popper"], function (require, exports, react_7, reactstrap_3, hover_2, live_1, react_popper_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_7 = __importDefault(react_7);
-    function createSettings() {
+    class PopoverInner extends react_7.default.Component {
+        render() {
+            const { args, showArrow = true, children } = this.props;
+            const { placement, ref, style, arrowProps } = args;
+            return react_7.default.createElement("div", { className: `popover bs-popover-${placement}`, ref: ref, style: style },
+                react_7.default.createElement("div", { className: "popover-inner", role: "tooltip", "aria-hidden": "true" }, children),
+                showArrow && react_7.default.createElement("div", { className: "arrow", ref: arrowProps.ref, style: arrowProps.style }));
+        }
+    }
+    function createPopover() {
+        const target = live_1.createLiveRef(null);
+        const isTargetHovered = live_1.createLiveRef(false);
+        const targetWithHover = live_1.combineReceivers(target, hover_2.getHoverRef(isTargetHovered, { intent: { timeout: 1000 } }));
+        const popover = live_1.createLiveRef(null);
+        const isPopoverHovered = live_1.createLiveRef(false);
+        const popoverWithHover = hover_2.getHoverRef(isPopoverHovered);
         return {
-            showArrow: live_1.createLiveRef(false),
-            forceOpen: live_1.createLiveRef(false),
+            targetRef: targetWithHover,
+            BoundPopover: ({ showArrow = true, forceOpen = false, placement, children, }) => react_7.default.createElement(live_1.Listen, { to: { isTargetHovered, isPopoverHovered, target } }, ({ isTargetHovered, isPopoverHovered, target }) => {
+                const shown = isTargetHovered || isPopoverHovered || forceOpen;
+                return react_7.default.createElement(reactstrap_3.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
+                    react_7.default.createElement(react_popper_2.Popper, { referenceElement: target || undefined, placement: placement, innerRef: popoverWithHover, key: String(showArrow) }, args => react_7.default.createElement(PopoverInner, { args: args, showArrow: showArrow }, children)));
+            }),
         };
     }
-    exports.createSettings = createSettings;
-    function SettingsForm({ settings }) {
-        return react_7.default.createElement(live_1.Listen, { to: settings }, ({ showArrow, forceOpen }) => react_7.default.createElement(reactstrap_3.Form, null,
-            react_7.default.createElement(reactstrap_3.FormGroup, { check: true },
-                react_7.default.createElement(reactstrap_3.Label, { check: true },
-                    react_7.default.createElement(reactstrap_3.Input, { type: "checkbox", id: "showArrow", checked: showArrow, onChange: e => settings.showArrow(e.target.checked) }),
-                    ' ',
-                    "Show Arrow")),
-            react_7.default.createElement(reactstrap_3.FormGroup, { check: true },
-                react_7.default.createElement(reactstrap_3.Label, { check: true },
-                    react_7.default.createElement(reactstrap_3.Input, { type: "checkbox", id: "forceOpen", checked: forceOpen, onChange: e => settings.forceOpen(e.target.checked) }),
-                    ' ',
-                    "Force Open"))));
-    }
-    exports.SettingsForm = SettingsForm;
+    exports.createPopover = createPopover;
 });
-define("demos/popover-classes/index", ["require", "exports", "react", "react-dom", "reactstrap", "lib/hover", "demos/popover-classes/settings", "lib/live", "react-popper"], function (require, exports, react_8, react_dom_2, reactstrap_4, hover_2, settings_2, live_2, react_popper_2) {
+define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/Popover"], function (require, exports, react_8, react_dom_2, reactstrap_4, popover_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_8 = __importDefault(react_8);
     react_dom_2 = __importDefault(react_dom_2);
-    class PopoverInner extends react_8.default.Component {
-        render() {
-            const { args, showArrow = true, children } = this.props;
-            const { placement, ref, style, arrowProps } = args;
-            return react_8.default.createElement("div", { className: `popover bs-popover-${placement}`, ref: ref, style: style },
-                react_8.default.createElement("div", { className: "popover-inner", role: "tooltip", "aria-hidden": "true" }, children),
-                showArrow && react_8.default.createElement("div", { className: "arrow", ref: arrowProps.ref, style: arrowProps.style }));
-        }
-    }
     class ParagraphWithPopover extends react_8.default.Component {
-        constructor(props) {
-            super(props);
-            this.popoverTarget = live_2.createLiveRef(null);
-            this.isTargetHovered = live_2.createLiveRef(false);
-            this.popoverTargetWithHover = live_2.combineReceivers(this.popoverTarget, hover_2.getHoverRef(this.isTargetHovered, { intent: { timeout: 1000 } }));
-            this.popover = live_2.createLiveRef(null);
-            this.isPopoverHovered = live_2.createLiveRef(false);
-            this.popoverWithHover = hover_2.getHoverRef(this.isPopoverHovered);
+        constructor() {
+            super(...arguments);
+            this.popover = popover_1.createPopover();
         }
         render() {
+            const { BoundPopover } = this.popover;
             return react_8.default.createElement(react_8.default.Fragment, null,
                 react_8.default.createElement("p", null,
                     "This link has a ",
-                    react_8.default.createElement("a", { ref: this.popoverTargetWithHover, href: "#" }, "popover")),
-                react_8.default.createElement(live_2.Listen, { to: {
-                        isTargetHovered: this.isTargetHovered,
-                        isPopoverHovered: this.isPopoverHovered,
-                        popoverTarget: this.popoverTarget,
-                        forceOpen: this.props.settings.forceOpen,
-                        showArrow: this.props.settings.showArrow,
-                    } }, ({ isTargetHovered, isPopoverHovered, popoverTarget, forceOpen, showArrow }) => {
-                    const shown = isTargetHovered || isPopoverHovered || forceOpen;
-                    return react_8.default.createElement(reactstrap_4.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
-                        react_8.default.createElement(react_popper_2.Popper, { referenceElement: popoverTarget || undefined, placement: "bottom", innerRef: this.popoverWithHover, key: String(showArrow) }, args => react_8.default.createElement(PopoverInner, { args: args, showArrow: showArrow },
-                            react_8.default.createElement(reactstrap_4.PopoverBody, null,
-                                react_8.default.createElement("h1", null, "Woohoo"),
-                                react_8.default.createElement("p", null, "This is all inside the popover.")))));
-                }));
+                    react_8.default.createElement("a", { ref: this.popover.targetRef, href: "#" }, "popover")),
+                react_8.default.createElement(BoundPopover, { placement: "bottom" },
+                    react_8.default.createElement(reactstrap_4.PopoverBody, null,
+                        react_8.default.createElement("h1", null, "Woohoo"),
+                        react_8.default.createElement("p", null, "This is all inside the popover."))));
         }
     }
     class App extends react_8.default.Component {
-        constructor() {
-            super(...arguments);
-            this.settings = settings_2.createSettings();
-        }
         render() {
             return react_8.default.createElement("main", { role: "main", className: "container mt-5" },
                 react_8.default.createElement(reactstrap_4.Jumbotron, null,
                     react_8.default.createElement("h1", null, "Hello, Reactstrap!"),
-                    react_8.default.createElement(ParagraphWithPopover, { settings: this.settings })),
-                react_8.default.createElement("h4", null, "Settings:"),
-                react_8.default.createElement(settings_2.SettingsForm, { settings: this.settings }));
+                    react_8.default.createElement(ParagraphWithPopover, null)));
         }
     }
     const root = document.getElementById('root');
     react_dom_2.default.render(react_8.default.createElement(App, null), root);
 });
-define("demos/react-hello-world/index", ["require", "exports", "react", "react-dom"], function (require, exports, react_9, react_dom_3) {
+define("demos/popover-classes/settings", ["require", "exports", "react", "reactstrap", "lib/live"], function (require, exports, react_9, reactstrap_5, live_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_9 = __importDefault(react_9);
-    react_dom_3 = __importDefault(react_dom_3);
-    function App() {
-        return react_9.default.createElement("h1", null, "React!");
+    function createSettings() {
+        return {
+            showArrow: live_2.createLiveRef(false),
+            forceOpen: live_2.createLiveRef(false),
+        };
     }
-    const root = document.getElementById('root');
-    react_dom_3.default.render(react_9.default.createElement(App, null), root);
+    exports.createSettings = createSettings;
+    function SettingsForm({ settings }) {
+        return react_9.default.createElement(live_2.Listen, { to: settings }, ({ showArrow, forceOpen }) => react_9.default.createElement(reactstrap_5.Form, null,
+            react_9.default.createElement(reactstrap_5.FormGroup, { check: true },
+                react_9.default.createElement(reactstrap_5.Label, { check: true },
+                    react_9.default.createElement(reactstrap_5.Input, { type: "checkbox", id: "showArrow", checked: showArrow, onChange: e => settings.showArrow(e.target.checked) }),
+                    ' ',
+                    "Show Arrow")),
+            react_9.default.createElement(reactstrap_5.FormGroup, { check: true },
+                react_9.default.createElement(reactstrap_5.Label, { check: true },
+                    react_9.default.createElement(reactstrap_5.Input, { type: "checkbox", id: "forceOpen", checked: forceOpen, onChange: e => settings.forceOpen(e.target.checked) }),
+                    ' ',
+                    "Force Open"))));
+    }
+    exports.SettingsForm = SettingsForm;
 });
-define("demos/reactstrap-hello-world/index", ["require", "exports", "react", "react-dom", "reactstrap"], function (require, exports, react_10, react_dom_4, reactstrap_5) {
+define("demos/popover-classes/index", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/settings", "lib/live", "demos/popover-classes/Popover"], function (require, exports, react_10, react_dom_3, reactstrap_6, settings_2, live_3, popover_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_10 = __importDefault(react_10);
-    react_dom_4 = __importDefault(react_dom_4);
-    function App() {
-        return react_10.default.createElement("main", { role: "main", className: "container mt-5" },
-            react_10.default.createElement("h1", null, "Hello, Reactstrap!"),
-            react_10.default.createElement(reactstrap_5.Alert, { color: "primary" }, "This is a primary alert \u2014 check it out!"));
+    react_dom_3 = __importDefault(react_dom_3);
+    class ParagraphWithPopover extends react_10.default.Component {
+        constructor() {
+            super(...arguments);
+            this.popover = popover_2.createPopover();
+        }
+        render() {
+            const { BoundPopover } = this.popover;
+            return react_10.default.createElement(react_10.default.Fragment, null,
+                react_10.default.createElement("p", null,
+                    "This link has a ",
+                    react_10.default.createElement("a", { ref: this.popover.targetRef, href: "#" }, "popover")),
+                react_10.default.createElement(live_3.Listen, { to: {
+                        forceOpen: this.props.settings.forceOpen,
+                        showArrow: this.props.settings.showArrow,
+                    } }, ({ forceOpen, showArrow }) => react_10.default.createElement(BoundPopover, { forceOpen: forceOpen, showArrow: showArrow, placement: "bottom" },
+                    react_10.default.createElement(reactstrap_6.PopoverBody, null,
+                        react_10.default.createElement("h1", null, "Woohoo"),
+                        react_10.default.createElement("p", null, "This is all inside the popover.")))));
+        }
+    }
+    class App extends react_10.default.Component {
+        constructor() {
+            super(...arguments);
+            this.settings = settings_2.createSettings();
+        }
+        render() {
+            return react_10.default.createElement("main", { role: "main", className: "container mt-5" },
+                react_10.default.createElement(reactstrap_6.Jumbotron, null,
+                    react_10.default.createElement("h1", null, "Hello, Reactstrap!"),
+                    react_10.default.createElement(ParagraphWithPopover, { settings: this.settings })),
+                react_10.default.createElement("h4", null, "Settings:"),
+                react_10.default.createElement(settings_2.SettingsForm, { settings: this.settings }));
+        }
     }
     const root = document.getElementById('root');
-    react_dom_4.default.render(react_10.default.createElement(App, null), root);
+    react_dom_3.default.render(react_10.default.createElement(App, null), root);
 });
-define("lib/DOMHooks", ["require", "exports", "react", "ResizeSensor"], function (require, exports, react_11, ResizeSensor_1) {
+define("demos/react-hello-world/index", ["require", "exports", "react", "react-dom"], function (require, exports, react_11, react_dom_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_11 = __importDefault(react_11);
+    react_dom_4 = __importDefault(react_dom_4);
+    function App() {
+        return react_11.default.createElement("h1", null, "React!");
+    }
+    const root = document.getElementById('root');
+    react_dom_4.default.render(react_11.default.createElement(App, null), root);
+});
+define("demos/reactstrap-hello-world/index", ["require", "exports", "react", "react-dom", "reactstrap"], function (require, exports, react_12, react_dom_5, reactstrap_7) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    react_12 = __importDefault(react_12);
+    react_dom_5 = __importDefault(react_dom_5);
+    function App() {
+        return react_12.default.createElement("main", { role: "main", className: "container mt-5" },
+            react_12.default.createElement("h1", null, "Hello, Reactstrap!"),
+            react_12.default.createElement(reactstrap_7.Alert, { color: "primary" }, "This is a primary alert \u2014 check it out!"));
+    }
+    const root = document.getElementById('root');
+    react_dom_5.default.render(react_12.default.createElement(App, null), root);
+});
+define("lib/DOMHooks", ["require", "exports", "react", "ResizeSensor"], function (require, exports, react_13, ResizeSensor_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    react_13 = __importDefault(react_13);
     ResizeSensor_1 = __importDefault(ResizeSensor_1);
     function useDevicePixelRatio() {
-        const [dpr, setDPR] = react_11.default.useState(window.devicePixelRatio);
-        react_11.default.useEffect(() => {
+        const [dpr, setDPR] = react_13.default.useState(window.devicePixelRatio);
+        react_13.default.useEffect(() => {
             const onResize = () => {
                 setDPR(window.devicePixelRatio);
             };
@@ -852,9 +896,9 @@ define("lib/DOMHooks", ["require", "exports", "react", "ResizeSensor"], function
     }
     exports.useDevicePixelRatio = useDevicePixelRatio;
     function useSize(ref) {
-        const [width, setWidth] = react_11.default.useState(0);
-        const [height, setHeight] = react_11.default.useState(0);
-        react_11.default.useLayoutEffect(() => {
+        const [width, setWidth] = react_13.default.useState(0);
+        const [height, setHeight] = react_13.default.useState(0);
+        react_13.default.useLayoutEffect(() => {
             if (!ref.current)
                 return;
             function update() {
@@ -874,42 +918,42 @@ define("lib/DOMHooks", ["require", "exports", "react", "ResizeSensor"], function
     }
     exports.useSize = useSize;
 });
-define("demos/size-hook/index", ["require", "exports", "react", "react-dom", "lib/DOMHooks"], function (require, exports, react_12, react_dom_5, DOMHooks) {
+define("demos/size-hook/index", ["require", "exports", "react", "react-dom", "lib/DOMHooks"], function (require, exports, react_14, react_dom_6, DOMHooks) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    react_12 = __importDefault(react_12);
-    react_dom_5 = __importDefault(react_dom_5);
+    react_14 = __importDefault(react_14);
+    react_dom_6 = __importDefault(react_dom_6);
     DOMHooks = __importStar(DOMHooks);
     function App() {
-        const ref = react_12.default.useRef(null);
+        const ref = react_14.default.useRef(null);
         const { width, height } = DOMHooks.useSize(ref);
         const dpr = DOMHooks.useDevicePixelRatio();
-        return react_12.default.createElement("div", { ref: ref, style: {
+        return react_14.default.createElement("div", { ref: ref, style: {
                 background: 'blue',
                 height: '100vh',
             } },
-            react_12.default.createElement("div", { style: { position: 'absolute', left: 0, top: 0, width: '50%', height: '50%', background: 'red' } }),
-            react_12.default.createElement("div", { style: { position: 'absolute', right: 0, bottom: 0, width: '50%', height: '50%', background: 'purple' } }),
-            react_12.default.createElement("div", { style: {
+            react_14.default.createElement("div", { style: { position: 'absolute', left: 0, top: 0, width: '50%', height: '50%', background: 'red' } }),
+            react_14.default.createElement("div", { style: { position: 'absolute', right: 0, bottom: 0, width: '50%', height: '50%', background: 'purple' } }),
+            react_14.default.createElement("div", { style: {
                     position: 'absolute',
                     left: 0, right: 0, top: 0, bottom: 0,
                     display: 'flex',
                 } },
-                react_12.default.createElement("div", { style: {
+                react_14.default.createElement("div", { style: {
                         fontSize: 36,
                         color: 'white',
                         margin: 'auto',
                     } },
-                    react_12.default.createElement("div", null,
+                    react_14.default.createElement("div", null,
                         "width: ",
                         width),
-                    react_12.default.createElement("div", null,
+                    react_14.default.createElement("div", null,
                         "height: ",
                         height),
-                    react_12.default.createElement("div", null,
+                    react_14.default.createElement("div", null,
                         "devicePixelRatio: ",
                         dpr))),
-            react_12.default.createElement("div", { style: {
+            react_14.default.createElement("div", { style: {
                     position: 'absolute',
                     left: 10,
                     right: 10,
@@ -919,42 +963,42 @@ define("demos/size-hook/index", ["require", "exports", "react", "react-dom", "li
                 } }, "This demo demonstrates a full-window div whose size is efficiently watched.  Try resizing the window, and also zooming (Command-Minus, Command-Equals on a Mac)."));
     }
     const root = document.getElementById('root');
-    react_dom_5.default.render(react_12.default.createElement(App, null), root);
+    react_dom_6.default.render(react_14.default.createElement(App, null), root);
 });
-define("demos/surface/index", ["require", "exports", "react", "react-dom", "lib/DOMHooks"], function (require, exports, react_13, react_dom_6, DOMHooks) {
+define("demos/surface/index", ["require", "exports", "react", "react-dom", "lib/DOMHooks"], function (require, exports, react_15, react_dom_7, DOMHooks) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    react_13 = __importDefault(react_13);
-    react_dom_6 = __importDefault(react_dom_6);
+    react_15 = __importDefault(react_15);
+    react_dom_7 = __importDefault(react_dom_7);
     DOMHooks = __importStar(DOMHooks);
     function App() {
-        return react_13.default.createElement("div", { style: {
+        return react_15.default.createElement("div", { style: {
                 height: '100vh',
                 display: 'flex',
             } },
-            react_13.default.createElement("div", { style: {
+            react_15.default.createElement("div", { style: {
                     background: '#ddd',
                     flex: 1,
                     margin: '20px',
                     position: 'relative',
                 } },
-                react_13.default.createElement(Surface, null)));
+                react_15.default.createElement(Surface, null)));
     }
     function Surface() {
-        const ref = react_13.default.useRef(null);
+        const ref = react_15.default.useRef(null);
         const { width, height } = DOMHooks.useSize(ref);
-        const handleMouseDown = react_13.default.useCallback((e) => {
+        const handleMouseDown = react_15.default.useCallback((e) => {
             if (!ref.current)
                 return;
             const rect = ref.current.getBoundingClientRect();
             console.log(e.clientX, e.clientY, rect.left, rect.top);
         }, []);
-        react_13.default.useLayoutEffect(() => {
+        react_15.default.useLayoutEffect(() => {
             if (ref.current && getComputedStyle(ref.current.parentElement).position !== 'relative') {
                 throw new Error('Surface parent element must have position: relative');
             }
         }, []);
-        return react_13.default.createElement("div", { ref: ref, style: {
+        return react_15.default.createElement("div", { ref: ref, style: {
                 position: 'absolute',
                 top: 0,
                 left: 0,
@@ -963,7 +1007,7 @@ define("demos/surface/index", ["require", "exports", "react", "react-dom", "lib/
             }, onMouseDown: handleMouseDown });
     }
     const root = document.getElementById('root');
-    react_dom_6.default.render(react_13.default.createElement(App, null), root);
+    react_dom_7.default.render(react_15.default.createElement(App, null), root);
 });
 /**
  * Copyright Marc J. Schmidt. See the LICENSE file at the top-level
