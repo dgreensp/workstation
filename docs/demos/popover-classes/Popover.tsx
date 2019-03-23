@@ -1,7 +1,7 @@
 import React from 'react';
 import { Fade } from 'reactstrap';
-import { createHover } from './hover';
-import { createLiveVar, Listen, combineReceivers, Receiver } from './live';
+import { createListenableHover } from './ListenableHover';
+import { Listen, combineReceivers, DOMReceiver, createLiveDOMVar } from './live';
 import { Popper } from 'react-popper';
 import * as PopperJS from "popper.js";
 
@@ -18,6 +18,10 @@ class PopoverInner extends React.Component<PopoverInnerProps> {
   render() {
     const { args, showArrow = true, children } = this.props;
     const { placement, ref, style, arrowProps } = args;
+    // This is the outer div structure of the popover, including the arrow, with
+    // Pooper's refs and styles correctly attached, and Bootstrap classes applied.
+    // In the future, perhaps provide a way to customize the style, such as by adding
+    // extra classNames.
     return <div className={`popover bs-popover-${placement}`} ref={ref} style={style}>
       <div className="popover-inner" role="tooltip" aria-hidden="true">
         {children}
@@ -28,7 +32,7 @@ class PopoverInner extends React.Component<PopoverInnerProps> {
 }
 
 export interface Popover {
-  targetRef: Receiver<HTMLElement | null>
+  targetRef: DOMReceiver
   BoundPopover: (props: BoundPopoverProps) => React.ReactElement
 }
 
@@ -40,12 +44,9 @@ export interface BoundPopoverProps {
 }
 
 export function createPopover(): Popover {
-  const isTargetHovered = createLiveVar(false);
-  const targetHover = createHover(isTargetHovered, { intent: { timeout: 1000 } });
-  const isPopoverHovered = createLiveVar(false);
-  const popoverHover = createHover(isPopoverHovered);
-
-  const target = createLiveVar<HTMLElement | null>(null)
+  const targetHover = createListenableHover({ intent: { timeout: 1000 } });
+  const popoverHover = createListenableHover({ intent: false });
+  const target = createLiveDOMVar()
   const targetWithHover = combineReceivers(target, targetHover.targetReceiver);
 
   return {
@@ -55,7 +56,7 @@ export function createPopover(): Popover {
       forceOpen = false,
       placement,
       children,
-    }) => <Listen to={{ isTargetHovered, isPopoverHovered, target }}>
+    }) => <Listen to={{ isTargetHovered: targetHover.isHovered, isPopoverHovered: popoverHover.isHovered, target }}>
         {
           ({ isTargetHovered, isPopoverHovered, target }) => {
             const shown = isTargetHovered || isPopoverHovered || forceOpen;

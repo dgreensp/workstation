@@ -93,3 +93,7 @@ export function combineReceivers<V>(...receivers: Receiver<V>[]): Receiver<V> {
     receivers.forEach(r => r(newValue));
   }
 }
+
+export type DOMReceiver = Receiver<HTMLElement | null>
+export type LiveDOMVar = LiveVar<HTMLElement | null>
+export const createLiveDOMVar = (initialValue: HTMLElement | null = null) => createLiveVar(initialValue);

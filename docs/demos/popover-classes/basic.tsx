@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Jumbotron, PopoverBody } from 'reactstrap';
-import { createPopover } from './popover';
+import { createPopover } from './Popover';
 
 class ParagraphWithPopover extends React.Component {
   popover = createPopover();

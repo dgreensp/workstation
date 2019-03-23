@@ -1,12 +1,12 @@
 import hoverintent, { HoverIntentOptions } from 'hoverintent';
-import { Receiver } from './live';
+import { DOMReceiver } from './live';
 
 export interface HoverOptions {
   intent?: boolean | HoverIntentOptions
 }
 
 export interface Hover {
-  targetReceiver: Receiver<HTMLElement | null>
+  targetReceiver: DOMReceiver
 }
 
 // This function returns a callback ref that will correctly set up and tear down the "hoverintent" package
@@ -16,11 +16,11 @@ export interface Hover {
 // - `false` for plain hover with no intent
 // - `true` for default hover intent
 // - an object with options to pass to the "hoverintent" package
-export function createHover(setHovered: (hovered: boolean) => void, options: HoverOptions = {}): Hover {
+export function createHover(setIsHovered: (isHovered: boolean) => void, options: HoverOptions = {}): Hover {
   let element: HTMLElement | null = null;
   let handle: ReturnType<typeof hoverintent> | null = null;
-  const onOver = () => setHovered(true);
-  const onOut = () => setHovered(false);
+  const onOver = () => setIsHovered(true);
+  const onOut = () => setIsHovered(false);
   const targetReceiver = (newElement: HTMLElement | null) => {
     if (newElement === element) {
       return;

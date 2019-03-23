@@ -3,6 +3,7 @@
     "target": "es6",
     "allowJs": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
     "module": "amd",
     "moduleResolution": "node",
