@@ -73,19 +73,19 @@ export class Listen<O> extends React.Component<ListenProps<O>, O> {
   }
 }
 
-export interface LiveRef<V> extends Listenable<V>, Receiver<V> {}
+export interface LiveVar<V> extends Listenable<V>, Receiver<V> {}
 
-export function createLiveRef<V>(initialValue: V): LiveRef<V> {
+export function createLiveVar<V>(initialValue: V): LiveVar<V> {
   const receivers = new Set<Receiver<V>>();
   let currentValue = initialValue;
-  const liveRef = (newValue: V) => {
+  const LiveVar = (newValue: V) => {
     currentValue = newValue;
     receivers.forEach(r => r(newValue));
   }
-  liveRef.listen = (receiver: Receiver<V>) => void receivers.add(receiver);
-  liveRef.unlisten = (receiver: Receiver<V>) => void receivers.delete(receiver);
-  liveRef.peek = () => currentValue;
-  return liveRef;
+  LiveVar.listen = (receiver: Receiver<V>) => void receivers.add(receiver);
+  LiveVar.unlisten = (receiver: Receiver<V>) => void receivers.delete(receiver);
+  LiveVar.peek = () => currentValue;
+  return LiveVar;
 }
 
 export function combineReceivers<V>(...receivers: Receiver<V>[]): Receiver<V> {

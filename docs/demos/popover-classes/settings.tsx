@@ -1,11 +1,11 @@
 import React from 'react'
 import { Label, Input, Form, FormGroup } from 'reactstrap';
-import { createLiveRef, Listen } from './live';
+import { createLiveVar, Listen } from './live';
 
 export function createSettings() {
   return {
-    showArrow: createLiveRef(false),
-    forceOpen: createLiveRef(false),
+    showArrow: createLiveVar(false),
+    forceOpen: createLiveVar(false),
   }
 }
 

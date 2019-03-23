@@ -1,7 +1,7 @@
 import React from 'react';
 import { Fade } from 'reactstrap';
 import { createHover } from './hover';
-import { createLiveRef, Listen, combineReceivers, Receiver } from './live';
+import { createLiveVar, Listen, combineReceivers, Receiver } from './live';
 import { Popper } from 'react-popper';
 import * as PopperJS from "popper.js";
 
@@ -40,12 +40,12 @@ export interface BoundPopoverProps {
 }
 
 export function createPopover(): Popover {
-  const isTargetHovered = createLiveRef(false);
+  const isTargetHovered = createLiveVar(false);
   const targetHover = createHover(isTargetHovered, { intent: { timeout: 1000 } });
-  const isPopoverHovered = createLiveRef(false);
+  const isPopoverHovered = createLiveVar(false);
   const popoverHover = createHover(isPopoverHovered);
 
-  const target = createLiveRef<HTMLElement | null>(null)
+  const target = createLiveVar<HTMLElement | null>(null)
   const targetWithHover = combineReceivers(target, targetHover.targetReceiver);
 
   return {

@@ -700,19 +700,19 @@ define("demos/popover-classes/live", ["require", "exports", "react"], function (
         }
     }
     exports.Listen = Listen;
-    function createLiveRef(initialValue) {
+    function createLiveVar(initialValue) {
         const receivers = new Set();
         let currentValue = initialValue;
-        const liveRef = (newValue) => {
+        const LiveVar = (newValue) => {
             currentValue = newValue;
             receivers.forEach(r => r(newValue));
         };
-        liveRef.listen = (receiver) => void receivers.add(receiver);
-        liveRef.unlisten = (receiver) => void receivers.delete(receiver);
-        liveRef.peek = () => currentValue;
-        return liveRef;
+        LiveVar.listen = (receiver) => void receivers.add(receiver);
+        LiveVar.unlisten = (receiver) => void receivers.delete(receiver);
+        LiveVar.peek = () => currentValue;
+        return LiveVar;
     }
-    exports.createLiveRef = createLiveRef;
+    exports.createLiveVar = createLiveVar;
     function combineReceivers(...receivers) {
         return (newValue) => {
             receivers.forEach(r => r(newValue));
@@ -774,11 +774,11 @@ define("demos/popover-classes/Popover", ["require", "exports", "react", "reactst
         }
     }
     function createPopover() {
-        const isTargetHovered = live_1.createLiveRef(false);
+        const isTargetHovered = live_1.createLiveVar(false);
         const targetHover = hover_2.createHover(isTargetHovered, { intent: { timeout: 1000 } });
-        const isPopoverHovered = live_1.createLiveRef(false);
+        const isPopoverHovered = live_1.createLiveVar(false);
         const popoverHover = hover_2.createHover(isPopoverHovered);
-        const target = live_1.createLiveRef(null);
+        const target = live_1.createLiveVar(null);
         const targetWithHover = live_1.combineReceivers(target, targetHover.targetReceiver);
         return {
             targetRef: targetWithHover,
@@ -830,8 +830,8 @@ define("demos/popover-classes/settings", ["require", "exports", "react", "reacts
     react_9 = __importDefault(react_9);
     function createSettings() {
         return {
-            showArrow: live_2.createLiveRef(false),
-            forceOpen: live_2.createLiveRef(false),
+            showArrow: live_2.createLiveVar(false),
+            forceOpen: live_2.createLiveVar(false),
         };
     }
     exports.createSettings = createSettings;
