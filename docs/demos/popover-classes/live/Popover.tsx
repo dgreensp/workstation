@@ -1,7 +1,7 @@
 import React from 'react';
 import { Fade } from 'reactstrap';
 import { createListenableHover } from './ListenableHover';
-import { Listen, combineReceivers, DOMReceiver, createLiveDOMVar } from './live';
+import { Listen, combineReceivers, DOMReceiver, createLiveDOMVar } from '.';
 import { Popper } from 'react-popper';
 import * as PopperJS from "popper.js";
 

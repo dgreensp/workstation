@@ -1,14 +1,6 @@
-import React from 'react';
-
-export interface Receiver<V> {
-  (newValue: V): void
-}
-
-export interface Listenable<V> {
-  listen(receiver: Receiver<V>): void
-  unlisten(receiver: Receiver<V>): void
-  peek(): V
-}
+import React from 'react'
+import { Listenable } from './Listenable'
+import { Receiver } from './Receiver'
 
 export interface ListenProps<O> {
   to: { [K in keyof O]: Listenable<O[K]> }
@@ -72,28 +64,3 @@ export class Listen<O> extends React.Component<ListenProps<O>, O> {
     return this.props.children(this.state);
   }
 }
-
-export interface LiveVar<V> extends Listenable<V>, Receiver<V> {}
-
-export function createLiveVar<V>(initialValue: V): LiveVar<V> {
-  const receivers = new Set<Receiver<V>>();
-  let currentValue = initialValue;
-  const LiveVar = (newValue: V) => {
-    currentValue = newValue;
-    receivers.forEach(r => r(newValue));
-  }
-  LiveVar.listen = (receiver: Receiver<V>) => void receivers.add(receiver);
-  LiveVar.unlisten = (receiver: Receiver<V>) => void receivers.delete(receiver);
-  LiveVar.peek = () => currentValue;
-  return LiveVar;
-}
-
-export function combineReceivers<V>(...receivers: Receiver<V>[]): Receiver<V> {
-  return (newValue: V) => {
-    receivers.forEach(r => r(newValue));
-  }
-}
-
-export type DOMReceiver = Receiver<HTMLElement | null>
-export type LiveDOMVar = LiveVar<HTMLElement | null>
-export const createLiveDOMVar = (initialValue: HTMLElement | null = null) => createLiveVar(initialValue);
