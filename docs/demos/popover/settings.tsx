@@ -1,6 +1,6 @@
 import React from 'react'
 import { Label, Input, Form, FormGroup } from 'reactstrap';
-import { useLiveRef, useLiveRefState } from 'lib/LiveRef';
+import { useLiveRef, useLiveRefState } from './LiveRef';
 
 export function useSettings() {
   return {

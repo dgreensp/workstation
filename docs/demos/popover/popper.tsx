@@ -1,6 +1,6 @@
 import React from 'react'
 import { Popper } from 'react-popper'
-import { DOMCallback, useLiveRef, useLiveRefState } from 'lib/LiveRef';
+import { DOMCallback, useLiveRef, useLiveRefState } from './LiveRef';
 
 type PopperProps = Popper extends React.Component<infer P> ? P : never;
 type PopperChildrenArgs = PopperProps['children'] extends (props: infer P) => any ? P : never;

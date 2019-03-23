@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Jumbotron, PopoverBody } from 'reactstrap';
 import { createSettings, SettingsForm, Settings } from './settings';
-import { Listen } from 'lib/live';
+import { Listen } from './live';
 import { createPopover } from './popover';
 
 interface ParagraphWithPopoverProps {

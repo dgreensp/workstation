@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Jumbotron, Fade, PopoverBody } from 'reactstrap';
-import { LiveRef, useLiveRef, useLiveRefState, DOMCallback } from 'lib/LiveRef';
-import { useAllCallbacks, useComputingWrapper, usePromise, ComputingWrapper } from 'lib/hooks';
-import { useHover } from 'lib/hover';
-import { usePopper, PopperInner } from 'lib/popper';
+import { LiveRef, useLiveRef, useLiveRefState, DOMCallback } from './LiveRef';
+import { useAllCallbacks, useComputingWrapper, usePromise, ComputingWrapper } from './hooks';
+import { useHover } from './hover';
+import { usePopper, PopperInner } from './popper';
 import { Settings, useSettings, SettingsForm } from './settings';
 
 function usePopoverComputeShown(forceOpen?: LiveRef<boolean>) {

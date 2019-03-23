@@ -1,7 +1,7 @@
 import React from 'react';
 import { Fade } from 'reactstrap';
-import { getHoverRef } from 'lib/hover';
-import { createLiveRef, Listen, combineReceivers, Receiver } from 'lib/live';
+import { createHover } from './hover';
+import { createLiveRef, Listen, combineReceivers, Receiver } from './live';
 import { Popper } from 'react-popper';
 import * as PopperJS from "popper.js";
 
@@ -40,14 +40,13 @@ export interface BoundPopoverProps {
 }
 
 export function createPopover(): Popover {
-  const target = createLiveRef<HTMLElement | null>(null)
-  const isTargetHovered = createLiveRef(false)
-  const targetWithHover = combineReceivers(
-    target,
-    getHoverRef(isTargetHovered, { intent: { timeout: 1000 } }))
-  const popover = createLiveRef<HTMLElement | null>(null)
+  const isTargetHovered = createLiveRef(false);
+  const targetHover = createHover(isTargetHovered, { intent: { timeout: 1000 } });
   const isPopoverHovered = createLiveRef(false);
-  const popoverWithHover = getHoverRef(isPopoverHovered);
+  const popoverHover = createHover(isPopoverHovered);
+
+  const target = createLiveRef<HTMLElement | null>(null)
+  const targetWithHover = combineReceivers(target, targetHover.targetReceiver);
 
   return {
     targetRef: targetWithHover,
@@ -64,7 +63,7 @@ export function createPopover(): Popover {
               <Popper
                 referenceElement={target || undefined}
                 placement={placement}
-                innerRef={popoverWithHover}
+                innerRef={popoverHover.targetReceiver}
                 key={String(showArrow)}
               >
                 {args => <PopoverInner args={args} showArrow={showArrow}>

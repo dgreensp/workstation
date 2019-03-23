@@ -1,4 +1,4 @@
-import { useOnce } from 'lib/hooks';
+import { useOnce } from './hooks';
 import { useState, useEffect } from 'react';
 
 /*
