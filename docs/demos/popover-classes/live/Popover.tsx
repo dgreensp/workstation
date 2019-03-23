@@ -5,32 +5,6 @@ import { Listen, combineReceivers, DOMReceiver, createLiveDOMVar } from '.';
 import { Popper } from 'react-popper';
 import * as PopperJS from "popper.js";
 
-type PopperProps = Popper extends React.Component<infer P> ? P : never;
-type PopperChildrenArgs = PopperProps['children'] extends (props: infer P) => any ? P : never;
-
-interface PopoverInnerProps {
-  args: PopperChildrenArgs
-  showArrow?: boolean
-  children: React.ReactNode
-}
-
-class PopoverInner extends React.Component<PopoverInnerProps> {
-  render() {
-    const { args, showArrow = true, children } = this.props;
-    const { placement, ref, style, arrowProps } = args;
-    // This is the outer div structure of the popover, including the arrow, with
-    // Pooper's refs and styles correctly attached, and Bootstrap classes applied.
-    // In the future, perhaps provide a way to customize the style, such as by adding
-    // extra classNames.
-    return <div className={`popover bs-popover-${placement}`} ref={ref} style={style}>
-      <div className="popover-inner" role="tooltip" aria-hidden="true">
-        {children}
-      </div>
-      {showArrow && <div className="arrow" ref={arrowProps.ref} style={arrowProps.style} />}
-    </div>
-  }
-}
-
 export interface Popover {
   targetRef: DOMReceiver
   BoundPopover: (props: BoundPopoverProps) => React.ReactElement
@@ -67,9 +41,17 @@ export function createPopover(): Popover {
                 innerRef={popoverHover.targetReceiver}
                 key={String(showArrow)}
               >
-                {args => <PopoverInner args={args} showArrow={showArrow}>
-                  {children}
-                </PopoverInner>
+                {({ ref, style, arrowProps }) =>
+                  // Attach Popover's refs and styles, and apply Bootstrap classes.
+                  // The caller is expected to nest popover-header and/or popover-body inside.
+                  // TODO: perhaps provide a way to customize the style, such as by
+                  // adding extra classNames.
+                  <div className={`popover bs-popover-${placement}`} ref={ref} style={style}>
+                    <div className="popover-inner" role="tooltip" aria-hidden="true">
+                      {children}
+                    </div>
+                    {showArrow && <div className="arrow" ref={arrowProps.ref} style={arrowProps.style} />}
+                  </div>
                 }
               </Popper>
             </Fade>

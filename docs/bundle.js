@@ -800,19 +800,6 @@ define("demos/popover-classes/live/Popover", ["require", "exports", "react", "re
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_7 = __importDefault(react_7);
-    class PopoverInner extends react_7.default.Component {
-        render() {
-            const { args, showArrow = true, children } = this.props;
-            const { placement, ref, style, arrowProps } = args;
-            // This is the outer div structure of the popover, including the arrow, with
-            // Pooper's refs and styles correctly attached, and Bootstrap classes applied.
-            // In the future, perhaps provide a way to customize the style, such as by adding
-            // extra classNames.
-            return react_7.default.createElement("div", { className: `popover bs-popover-${placement}`, ref: ref, style: style },
-                react_7.default.createElement("div", { className: "popover-inner", role: "tooltip", "aria-hidden": "true" }, children),
-                showArrow && react_7.default.createElement("div", { className: "arrow", ref: arrowProps.ref, style: arrowProps.style }));
-        }
-    }
     function createPopover() {
         const targetHover = ListenableHover_1.createListenableHover({ intent: { timeout: 1000 } });
         const popoverHover = ListenableHover_1.createListenableHover({ intent: false });
@@ -823,7 +810,14 @@ define("demos/popover-classes/live/Popover", ["require", "exports", "react", "re
             BoundPopover: ({ showArrow = true, forceOpen = false, placement, children, }) => react_7.default.createElement(_2.Listen, { to: { isTargetHovered: targetHover.isHovered, isPopoverHovered: popoverHover.isHovered, target } }, ({ isTargetHovered, isPopoverHovered, target }) => {
                 const shown = isTargetHovered || isPopoverHovered || forceOpen;
                 return react_7.default.createElement(reactstrap_3.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
-                    react_7.default.createElement(react_popper_2.Popper, { referenceElement: target || undefined, placement: placement, innerRef: popoverHover.targetReceiver, key: String(showArrow) }, args => react_7.default.createElement(PopoverInner, { args: args, showArrow: showArrow }, children)));
+                    react_7.default.createElement(react_popper_2.Popper, { referenceElement: target || undefined, placement: placement, innerRef: popoverHover.targetReceiver, key: String(showArrow) }, ({ ref, style, arrowProps }) => 
+                    // Attach Popover's refs and styles, and apply Bootstrap classes.
+                    // The caller is expected to nest popover-header and/or popover-body inside.
+                    // TODO: perhaps provide a way to customize the style, such as by
+                    // adding extra classNames.
+                    react_7.default.createElement("div", { className: `popover bs-popover-${placement}`, ref: ref, style: style },
+                        react_7.default.createElement("div", { className: "popover-inner", role: "tooltip", "aria-hidden": "true" }, children),
+                        showArrow && react_7.default.createElement("div", { className: "arrow", ref: arrowProps.ref, style: arrowProps.style }))));
             }),
         };
     }
