@@ -6,7 +6,7 @@ export interface HoverOptions {
 }
 
 export interface Hover {
-  targetReceiver: DOMReceiver
+  targetElement: DOMReceiver
 }
 
 // This function returns a callback ref that will correctly set up and tear down the "hoverintent" package
@@ -21,7 +21,7 @@ export function createHover(setIsHovered: (isHovered: boolean) => void, options:
   let handle: ReturnType<typeof hoverintent> | null = null;
   const onOver = () => setIsHovered(true);
   const onOut = () => setIsHovered(false);
-  const targetReceiver = (newElement: HTMLElement | null) => {
+  const targetElement = (newElement: HTMLElement | null) => {
     if (newElement === element) {
       return;
     }
@@ -40,5 +40,5 @@ export function createHover(setIsHovered: (isHovered: boolean) => void, options:
       }
     }
   }
-  return { targetReceiver };
+  return { targetElement };
 }

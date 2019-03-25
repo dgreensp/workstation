@@ -9,7 +9,7 @@ class ParagraphWithPopover extends React.Component {
   render() {
     const { BoundPopover } = this.popover;
     return <>
-      <p>This link has a <a ref={this.popover.targetRef} href="#">popover</a></p>
+      <p>This link has a <a ref={this.popover.referenceElement} href="#">popover</a></p>
       <BoundPopover placement="bottom">
         <PopoverBody>
           <h1>Woohoo</h1>

@@ -15,7 +15,7 @@ class ParagraphWithPopover extends React.Component<ParagraphWithPopoverProps> {
   render() {
     const { BoundPopover } = this.popover;
     return <>
-      <p>This link has a <a ref={this.popover.targetRef} href="#">popover</a></p>
+      <p>This link has a <a ref={this.popover.referenceElement} href="#">popover</a></p>
       <Listen to={{
         forceOpen: this.props.settings.forceOpen,
         showArrow: this.props.settings.showArrow,

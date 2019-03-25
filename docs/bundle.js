@@ -759,7 +759,7 @@ define("demos/popover-classes/components/Hover", ["require", "exports", "hoverin
         let handle = null;
         const onOver = () => setIsHovered(true);
         const onOut = () => setIsHovered(false);
-        const targetReceiver = (newElement) => {
+        const targetElement = (newElement) => {
             if (newElement === element) {
                 return;
             }
@@ -779,7 +779,7 @@ define("demos/popover-classes/components/Hover", ["require", "exports", "hoverin
                 }
             }
         };
-        return { targetReceiver };
+        return { targetElement };
     }
     exports.createHover = createHover;
 });
@@ -790,7 +790,7 @@ define("demos/popover-classes/components/ListenableHover", ["require", "exports"
         const isHovered = live_1.createLiveVar(false);
         const hover = Hover_1.createHover(isHovered, options);
         return {
-            targetReceiver: hover.targetReceiver,
+            targetElement: hover.targetElement,
             isHovered,
         };
     }
@@ -801,16 +801,20 @@ define("demos/popover-classes/components/Popover", ["require", "exports", "react
     Object.defineProperty(exports, "__esModule", { value: true });
     react_7 = __importDefault(react_7);
     function createPopover() {
-        const targetHover = ListenableHover_1.createListenableHover({ intent: { timeout: 1000 } });
+        const referenceHover = ListenableHover_1.createListenableHover({ intent: { timeout: 1000 } });
         const popoverHover = ListenableHover_1.createListenableHover({ intent: false });
-        const target = live_2.createLiveDOMVar();
-        const targetWithHover = live_2.combineReceivers(target, targetHover.targetReceiver);
+        const referenceElement = live_2.createLiveDOMVar();
+        const referenceWithHover = live_2.combineReceivers(referenceElement, referenceHover.targetElement);
         return {
-            targetRef: targetWithHover,
-            BoundPopover: ({ showArrow = true, forceOpen = false, placement, children, }) => react_7.default.createElement(live_2.Listen, { to: { isTargetHovered: targetHover.isHovered, isPopoverHovered: popoverHover.isHovered, target } }, ({ isTargetHovered, isPopoverHovered, target }) => {
+            referenceElement: referenceWithHover,
+            BoundPopover: ({ showArrow = true, forceOpen = false, placement, children, }) => react_7.default.createElement(live_2.Listen, { to: {
+                    isTargetHovered: referenceHover.isHovered,
+                    isPopoverHovered: popoverHover.isHovered,
+                    referenceElement,
+                } }, ({ isTargetHovered, isPopoverHovered, referenceElement }) => {
                 const shown = isTargetHovered || isPopoverHovered || forceOpen;
                 return react_7.default.createElement(reactstrap_3.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
-                    react_7.default.createElement(react_popper_2.Popper, { referenceElement: target || undefined, placement: placement, innerRef: popoverHover.targetReceiver, key: String(showArrow) }, ({ ref, style, arrowProps }) => 
+                    react_7.default.createElement(react_popper_2.Popper, { referenceElement: referenceElement || undefined, placement: placement, innerRef: popoverHover.targetElement, key: String(showArrow) }, ({ ref, style, arrowProps }) => 
                     // Attach Popover's refs and styles, and apply Bootstrap classes.
                     // The caller is expected to nest popover-header and/or popover-body inside.
                     // TODO: perhaps provide a way to customize the style, such as by
@@ -838,7 +842,7 @@ define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom
             return react_8.default.createElement(react_8.default.Fragment, null,
                 react_8.default.createElement("p", null,
                     "This link has a ",
-                    react_8.default.createElement("a", { ref: this.popover.targetRef, href: "#" }, "popover")),
+                    react_8.default.createElement("a", { ref: this.popover.referenceElement, href: "#" }, "popover")),
                 react_8.default.createElement(BoundPopover, { placement: "bottom" },
                     react_8.default.createElement(reactstrap_4.PopoverBody, null,
                         react_8.default.createElement("h1", null, "Woohoo"),
@@ -897,7 +901,7 @@ define("demos/popover-classes/index", ["require", "exports", "react", "react-dom
             return react_10.default.createElement(react_10.default.Fragment, null,
                 react_10.default.createElement("p", null,
                     "This link has a ",
-                    react_10.default.createElement("a", { ref: this.popover.targetRef, href: "#" }, "popover")),
+                    react_10.default.createElement("a", { ref: this.popover.referenceElement, href: "#" }, "popover")),
                 react_10.default.createElement(live_4.Listen, { to: {
                         forceOpen: this.props.settings.forceOpen,
                         showArrow: this.props.settings.showArrow,

@@ -6,7 +6,7 @@ import { Popper } from 'react-popper';
 import * as PopperJS from "popper.js";
 
 export interface Popover {
-  targetRef: DOMReceiver
+  referenceElement: DOMReceiver
   BoundPopover: (props: BoundPopoverProps) => React.ReactElement
 }
 
@@ -18,27 +18,31 @@ export interface BoundPopoverProps {
 }
 
 export function createPopover(): Popover {
-  const targetHover = createListenableHover({ intent: { timeout: 1000 } });
+  const referenceHover = createListenableHover({ intent: { timeout: 1000 } });
   const popoverHover = createListenableHover({ intent: false });
-  const target = createLiveDOMVar()
-  const targetWithHover = combineReceivers(target, targetHover.targetReceiver);
+  const referenceElement = createLiveDOMVar()
+  const referenceWithHover = combineReceivers(referenceElement, referenceHover.targetElement);
 
   return {
-    targetRef: targetWithHover,
+    referenceElement: referenceWithHover,
     BoundPopover: ({
       showArrow = true,
       forceOpen = false,
       placement,
       children,
-    }) => <Listen to={{ isTargetHovered: targetHover.isHovered, isPopoverHovered: popoverHover.isHovered, target }}>
+    }) => <Listen to={{
+      isTargetHovered: referenceHover.isHovered,
+      isPopoverHovered: popoverHover.isHovered,
+      referenceElement,
+    }}>
         {
-          ({ isTargetHovered, isPopoverHovered, target }) => {
+          ({ isTargetHovered, isPopoverHovered, referenceElement }) => {
             const shown = isTargetHovered || isPopoverHovered || forceOpen;
             return <Fade in={shown} mountOnEnter unmountOnExit enter={false}>
               <Popper
-                referenceElement={target || undefined}
+                referenceElement={referenceElement || undefined}
                 placement={placement}
-                innerRef={popoverHover.targetReceiver}
+                innerRef={popoverHover.targetElement}
                 key={String(showArrow)}
               >
                 {({ ref, style, arrowProps }) =>
