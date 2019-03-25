@@ -1,4 +1,4 @@
-import { DOMReceiver, Listenable, createLiveVar } from '.';
+import { DOMReceiver, Listenable, createLiveVar } from '../live';
 import { HoverOptions, createHover } from './Hover';
 
 export interface ListenableHover {

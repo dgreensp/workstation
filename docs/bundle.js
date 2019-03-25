@@ -643,7 +643,7 @@ define("demos/popover/index", ["require", "exports", "react", "react-dom", "reac
     const root = document.getElementById('root');
     react_dom_1.default.render(react_5.default.createElement(App, null), root);
 });
-define("demos/popover-classes/live/core/Receiver", ["require", "exports"], function (require, exports) {
+define("demos/popover-classes/live/Receiver", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function combineReceivers(...receivers) {
@@ -653,11 +653,11 @@ define("demos/popover-classes/live/core/Receiver", ["require", "exports"], funct
     }
     exports.combineReceivers = combineReceivers;
 });
-define("demos/popover-classes/live/core/Listenable", ["require", "exports"], function (require, exports) {
+define("demos/popover-classes/live/Listenable", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("demos/popover-classes/live/core/Listen", ["require", "exports", "react"], function (require, exports, react_6) {
+define("demos/popover-classes/live/Listen", ["require", "exports", "react"], function (require, exports, react_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_6 = __importDefault(react_6);
@@ -715,7 +715,7 @@ define("demos/popover-classes/live/core/Listen", ["require", "exports", "react"]
     }
     exports.Listen = Listen;
 });
-define("demos/popover-classes/live/core/LiveVar", ["require", "exports"], function (require, exports) {
+define("demos/popover-classes/live/LiveVar", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function createLiveVar(initialValue) {
@@ -733,7 +733,7 @@ define("demos/popover-classes/live/core/LiveVar", ["require", "exports"], functi
     exports.createLiveVar = createLiveVar;
     exports.createLiveDOMVar = (initialValue = null) => createLiveVar(initialValue);
 });
-define("demos/popover-classes/live/index", ["require", "exports", "demos/popover-classes/live/core/Receiver", "demos/popover-classes/live/core/Listen", "demos/popover-classes/live/core/LiveVar"], function (require, exports, Receiver_1, Listen_1, LiveVar_1) {
+define("demos/popover-classes/live/index", ["require", "exports", "demos/popover-classes/live/Receiver", "demos/popover-classes/live/Listen", "demos/popover-classes/live/LiveVar"], function (require, exports, Receiver_1, Listen_1, LiveVar_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -743,7 +743,7 @@ define("demos/popover-classes/live/index", ["require", "exports", "demos/popover
     __export(Listen_1);
     __export(LiveVar_1);
 });
-define("demos/popover-classes/live/Hover", ["require", "exports", "hoverintent"], function (require, exports, hoverintent_2) {
+define("demos/popover-classes/components/Hover", ["require", "exports", "hoverintent"], function (require, exports, hoverintent_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     hoverintent_2 = __importDefault(hoverintent_2);
@@ -783,11 +783,11 @@ define("demos/popover-classes/live/Hover", ["require", "exports", "hoverintent"]
     }
     exports.createHover = createHover;
 });
-define("demos/popover-classes/live/ListenableHover", ["require", "exports", "demos/popover-classes/live/index", "demos/popover-classes/live/Hover"], function (require, exports, _1, Hover_1) {
+define("demos/popover-classes/components/ListenableHover", ["require", "exports", "demos/popover-classes/live/index", "demos/popover-classes/components/Hover"], function (require, exports, live_1, Hover_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function createListenableHover(options) {
-        const isHovered = _1.createLiveVar(false);
+        const isHovered = live_1.createLiveVar(false);
         const hover = Hover_1.createHover(isHovered, options);
         return {
             targetReceiver: hover.targetReceiver,
@@ -796,18 +796,18 @@ define("demos/popover-classes/live/ListenableHover", ["require", "exports", "dem
     }
     exports.createListenableHover = createListenableHover;
 });
-define("demos/popover-classes/live/Popover", ["require", "exports", "react", "reactstrap", "demos/popover-classes/live/ListenableHover", "demos/popover-classes/live/index", "react-popper"], function (require, exports, react_7, reactstrap_3, ListenableHover_1, _2, react_popper_2) {
+define("demos/popover-classes/components/Popover", ["require", "exports", "react", "reactstrap", "demos/popover-classes/components/ListenableHover", "demos/popover-classes/live/index", "react-popper"], function (require, exports, react_7, reactstrap_3, ListenableHover_1, live_2, react_popper_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_7 = __importDefault(react_7);
     function createPopover() {
         const targetHover = ListenableHover_1.createListenableHover({ intent: { timeout: 1000 } });
         const popoverHover = ListenableHover_1.createListenableHover({ intent: false });
-        const target = _2.createLiveDOMVar();
-        const targetWithHover = _2.combineReceivers(target, targetHover.targetReceiver);
+        const target = live_2.createLiveDOMVar();
+        const targetWithHover = live_2.combineReceivers(target, targetHover.targetReceiver);
         return {
             targetRef: targetWithHover,
-            BoundPopover: ({ showArrow = true, forceOpen = false, placement, children, }) => react_7.default.createElement(_2.Listen, { to: { isTargetHovered: targetHover.isHovered, isPopoverHovered: popoverHover.isHovered, target } }, ({ isTargetHovered, isPopoverHovered, target }) => {
+            BoundPopover: ({ showArrow = true, forceOpen = false, placement, children, }) => react_7.default.createElement(live_2.Listen, { to: { isTargetHovered: targetHover.isHovered, isPopoverHovered: popoverHover.isHovered, target } }, ({ isTargetHovered, isPopoverHovered, target }) => {
                 const shown = isTargetHovered || isPopoverHovered || forceOpen;
                 return react_7.default.createElement(reactstrap_3.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
                     react_7.default.createElement(react_popper_2.Popper, { referenceElement: target || undefined, placement: placement, innerRef: popoverHover.targetReceiver, key: String(showArrow) }, ({ ref, style, arrowProps }) => 
@@ -823,7 +823,7 @@ define("demos/popover-classes/live/Popover", ["require", "exports", "react", "re
     }
     exports.createPopover = createPopover;
 });
-define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/live/Popover"], function (require, exports, react_8, react_dom_2, reactstrap_4, Popover_1) {
+define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/components/Popover"], function (require, exports, react_8, react_dom_2, reactstrap_4, Popover_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_8 = __importDefault(react_8);
@@ -856,19 +856,19 @@ define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom
     const root = document.getElementById('root');
     react_dom_2.default.render(react_8.default.createElement(App, null), root);
 });
-define("demos/popover-classes/settings", ["require", "exports", "react", "reactstrap", "demos/popover-classes/live/index"], function (require, exports, react_9, reactstrap_5, live_1) {
+define("demos/popover-classes/settings", ["require", "exports", "react", "reactstrap", "demos/popover-classes/live/index"], function (require, exports, react_9, reactstrap_5, live_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_9 = __importDefault(react_9);
     function createSettings() {
         return {
-            showArrow: live_1.createLiveVar(false),
-            forceOpen: live_1.createLiveVar(false),
+            showArrow: live_3.createLiveVar(false),
+            forceOpen: live_3.createLiveVar(false),
         };
     }
     exports.createSettings = createSettings;
     function SettingsForm({ settings }) {
-        return react_9.default.createElement(live_1.Listen, { to: settings }, ({ showArrow, forceOpen }) => react_9.default.createElement(reactstrap_5.Form, null,
+        return react_9.default.createElement(live_3.Listen, { to: settings }, ({ showArrow, forceOpen }) => react_9.default.createElement(reactstrap_5.Form, null,
             react_9.default.createElement(reactstrap_5.FormGroup, { check: true },
                 react_9.default.createElement(reactstrap_5.Label, { check: true },
                     react_9.default.createElement(reactstrap_5.Input, { type: "checkbox", id: "showArrow", checked: showArrow, onChange: e => settings.showArrow(e.target.checked) }),
@@ -882,7 +882,7 @@ define("demos/popover-classes/settings", ["require", "exports", "react", "reacts
     }
     exports.SettingsForm = SettingsForm;
 });
-define("demos/popover-classes/index", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/settings", "demos/popover-classes/live/index", "demos/popover-classes/live/Popover"], function (require, exports, react_10, react_dom_3, reactstrap_6, settings_2, live_2, Popover_2) {
+define("demos/popover-classes/index", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/settings", "demos/popover-classes/live/index", "demos/popover-classes/components/Popover"], function (require, exports, react_10, react_dom_3, reactstrap_6, settings_2, live_4, Popover_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_10 = __importDefault(react_10);
@@ -898,7 +898,7 @@ define("demos/popover-classes/index", ["require", "exports", "react", "react-dom
                 react_10.default.createElement("p", null,
                     "This link has a ",
                     react_10.default.createElement("a", { ref: this.popover.targetRef, href: "#" }, "popover")),
-                react_10.default.createElement(live_2.Listen, { to: {
+                react_10.default.createElement(live_4.Listen, { to: {
                         forceOpen: this.props.settings.forceOpen,
                         showArrow: this.props.settings.showArrow,
                     } }, ({ forceOpen, showArrow }) => react_10.default.createElement(BoundPopover, { forceOpen: forceOpen, showArrow: showArrow, placement: "bottom" },

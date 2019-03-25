@@ -1,7 +1,5 @@
 # Live!
 
-This directory contains the core **live** library and components that use it.
-
 ## Overview
 
 The **live** library provides a simple but very useful concept of reactive variables called LiveVars,
@@ -138,3 +136,8 @@ type LiveDOMVar = LiveVar<HTMLElement | null>
 
 this.element = createLiveDOMVar() // initial value defaults to null
 ```
+
+## Internal implementation notes
+
+Files in this directory should import each other using paths like (for example) `./Listen`, not
+`import { Listen } from '.'`.

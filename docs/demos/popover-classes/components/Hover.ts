@@ -1,5 +1,5 @@
 import hoverintent, { HoverIntentOptions } from 'hoverintent';
-import { DOMReceiver } from '.';
+import { DOMReceiver } from '../live';
 
 export interface HoverOptions {
   intent?: boolean | HoverIntentOptions
