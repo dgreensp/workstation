@@ -159,16 +159,41 @@ function parseAx(input: string): ParseResult {
     const lceResult = parseLinearCommandExpression(s)
     if (typeof lceResult === 'string') {
       return failure(lceResult)
-    } else {
-      const { firstCommand, lastCommand } = lceResult
-      pushParameter(currentCommand, firstCommand)
-      currentCommand = lastCommand
-      commandStack.push(lastCommand)
-      indentSpacesCount += INDENT_SIZE
+    }
+    const { firstCommand, lastCommand } = lceResult
+    let eolCommand = lastCommand
+    pushParameter(currentCommand, firstCommand)
+    currentCommand = lastCommand
+    indentSpacesCount += INDENT_SIZE
+
+    if (s.match(/: /y)) {
+      const colonCommand = currentCommand
+      const lce1 = parseLinearCommandExpression(s)
+      if (typeof lce1 === 'string') {
+        return failure(lce1)
+      }
+      const { firstCommand, lastCommand } = lce1
+      pushParameter(colonCommand, firstCommand)
+      eolCommand = lastCommand
+      if (!s.match(/, /y)) {
+        return failure('Expected comma')
+      }
+      do {
+        const lce = parseLinearCommandExpression(s)
+        if (typeof lce === 'string') {
+          return failure(lce)
+        }
+        const { firstCommand, lastCommand } = lce
+        pushParameter(colonCommand, firstCommand)
+        eolCommand = lastCommand
+      } while (s.match(/, /y))
     }
 
+    currentCommand = eolCommand
+    commandStack.push(currentCommand)
+
     if (!s.match(/$/my)) {
-      return failure('expected end of line')
+      return failure('Expected end of line')
     }
     lineNumber++
   }
