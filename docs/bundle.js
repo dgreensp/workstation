@@ -615,6 +615,24 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
         }
         return null;
     }
+    function parseLinearCommandExpression(s) {
+        const name = parseName(s);
+        if (name === null) {
+            return 'Expected command';
+        }
+        const firstCommand = { name };
+        let lastCommand = firstCommand;
+        while (s.match(/ /y)) {
+            const subname = parseName(s);
+            if (subname === null) {
+                return 'Expected command as parameter';
+            }
+            const subcommand = { name: subname };
+            pushParameter(lastCommand, subcommand);
+            lastCommand = subcommand;
+        }
+        return { firstCommand, lastCommand };
+    }
     function parseAx(input) {
         const lines = input.split('\n');
         let indentSpacesCount = 0;
@@ -637,25 +655,16 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
             if (spaces.length !== indentSpacesCount) {
                 return failure('indent');
             }
-            const name = parseName(s);
-            if (name === null) {
-                return failure('expected command');
+            const lceResult = parseLinearCommandExpression(s);
+            if (typeof lceResult === 'string') {
+                return failure(lceResult);
             }
-            const newCommand = { name };
-            pushParameter(currentCommand, newCommand);
-            currentCommand = newCommand;
-            commandStack.push(newCommand);
-            indentSpacesCount += INDENT_SIZE;
-            while (s.match(/ /y)) {
-                const subname = parseName(s);
-                if (subname === null) {
-                    return failure('expected command parameter');
-                }
-                const subcommand = { name: subname };
-                pushParameter(currentCommand, subcommand);
-                currentCommand = subcommand;
-                commandStack.pop();
-                commandStack.push(subcommand);
+            else {
+                const { firstCommand, lastCommand } = lceResult;
+                pushParameter(currentCommand, firstCommand);
+                currentCommand = lastCommand;
+                commandStack.push(lastCommand);
+                indentSpacesCount += INDENT_SIZE;
             }
             if (!s.match(/$/my)) {
                 return failure('expected end of line');
