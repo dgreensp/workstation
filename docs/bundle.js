@@ -563,8 +563,10 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
     }
     function ParserOutput({ input }) {
         const result = react_3.useMemo(() => parseAx(input), [input]);
+        const formattedResult = JSON.stringify(result, null, 2);
+        const prettyPrinted = result.type === 'success' ? prettyPrint(result.result, 80) : null;
         return (react_3.default.createElement("pre", null,
-            react_3.default.createElement("code", { className: result.type }, JSON.stringify(result, null, 2))));
+            react_3.default.createElement("code", { className: result.type }, result.type === 'success' ? prettyPrinted : formattedResult)));
     }
     const NO_PARAMETERS = Object.seal([]); // shared object for performance
     function pushParameter(command, parameter) {
@@ -602,13 +604,14 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
             return this.match(re) || [''];
         }
     }
+    const WORD_REGEX = /[^\s":,]+/y;
     function parseName(s) {
         const stringMatch = s.match(/"([^"\\]*|\\["\\bfnrt\/]|\\u[0-9a-f]{4})*"/y);
         if (stringMatch) {
             return JSON.parse(stringMatch[0]);
         }
         else {
-            const wordMatch = s.match(/[^\s":,]+/y);
+            const wordMatch = s.match(WORD_REGEX);
             if (wordMatch) {
                 return wordMatch[0];
             }
@@ -633,10 +636,10 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
         }
         return { firstCommand, lastCommand };
     }
+    const INDENT_SIZE = 2;
     function parseAx(input) {
         const lines = input.split('\n');
         let indentSpacesCount = 0;
-        const INDENT_SIZE = 2;
         const root = { name: '' };
         let currentCommand = root;
         const commandStack = [root];
@@ -694,6 +697,81 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
             lineNumber++;
         }
         return { type: 'success', result: completeAx(root) };
+    }
+    function prettyPrintName(name) {
+        WORD_REGEX.lastIndex = 0;
+        if (WORD_REGEX.exec(name) && WORD_REGEX.lastIndex === name.length) {
+            return name;
+        }
+        return JSON.stringify(name);
+    }
+    const SPACES_MEMO = new Map();
+    function getSpaces(count) {
+        if (!SPACES_MEMO.has(count)) {
+            SPACES_MEMO.set(count, new Array(count + 1).join(' '));
+        }
+        return SPACES_MEMO.get(count);
+    }
+    function prettyPrint(ax, lineLength) {
+        if (!ax.name) {
+            // root
+            return ax.parameters.map(a => doPrettyPrint(a, lineLength)).join('');
+        }
+        return doPrettyPrint(ax, lineLength);
+    }
+    function doPrettyPrint(ax, lineLength, indentSpacesCount = 0, leftOnLine = lineLength) {
+        const name = prettyPrintName(ax.name);
+        const firstParameter = ax.parameters[0];
+        if (!firstParameter) {
+            return name + '\n';
+        }
+        if (ax.parameters.length === 1) {
+            if (name.length + 1 + prettyPrintName(firstParameter.name).length <=
+                leftOnLine) {
+                return (name +
+                    ' ' +
+                    doPrettyPrint(firstParameter, lineLength, indentSpacesCount, leftOnLine - name.length - 1));
+            }
+        }
+        else {
+            const lastParameter = ax.parameters[ax.parameters.length - 1];
+            const allButLastParameter = ax.parameters
+                .slice(0, -1)
+                .map(prettyPrintLinearLine);
+            if (allButLastParameter.every(x => x !== null)) {
+                const line = name + ': ' + allButLastParameter.join(', ') + ', ';
+                if (line.length + prettyPrintName(lastParameter.name).length <=
+                    leftOnLine) {
+                    return (line +
+                        doPrettyPrint(lastParameter, lineLength, indentSpacesCount, leftOnLine - line.length));
+                }
+            }
+        }
+        const newIndent = indentSpacesCount + INDENT_SIZE;
+        return (name +
+            '\n' +
+            ax.parameters
+                .map(a => getSpaces(newIndent) +
+                doPrettyPrint(a, lineLength, newIndent, lineLength - newIndent))
+                .join(''));
+    }
+    function prettyPrintLinearLine(ax) {
+        const firstParameter = ax.parameters[0];
+        if (!firstParameter) {
+            return prettyPrintName(ax.name);
+        }
+        else if (ax.parameters.length === 1) {
+            const parameter = prettyPrintLinearLine(firstParameter);
+            if (parameter !== null) {
+                return prettyPrintName(ax.name) + ' ' + parameter;
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
     }
     const root = document.getElementById('root');
     react_dom_1.default.render(react_3.default.createElement(App, null), root);

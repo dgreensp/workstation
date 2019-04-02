@@ -32,9 +32,14 @@ function App() {
 
 function ParserOutput({ input }: { input: string }) {
   const result = useMemo(() => parseAx(input), [input])
+  const formattedResult = JSON.stringify(result, null, 2)
+  const prettyPrinted =
+    result.type === 'success' ? prettyPrint(result.result, 80) : null
   return (
     <pre>
-      <code className={result.type}>{JSON.stringify(result, null, 2)}</code>
+      <code className={result.type}>
+        {result.type === 'success' ? prettyPrinted : formattedResult}
+      </code>
     </pre>
   )
 }
@@ -99,12 +104,14 @@ interface ParseFailure {
 
 type ParseResult = ParseSuccess | ParseFailure
 
+const WORD_REGEX = /[^\s":,]+/y
+
 function parseName(s: Scanner): string | null {
   const stringMatch = s.match(/"([^"\\]*|\\["\\bfnrt\/]|\\u[0-9a-f]{4})*"/y)
   if (stringMatch) {
     return JSON.parse(stringMatch[0])
   } else {
-    const wordMatch = s.match(/[^\s":,]+/y)
+    const wordMatch = s.match(WORD_REGEX)
     if (wordMatch) {
       return wordMatch[0]
     }
@@ -133,10 +140,11 @@ function parseLinearCommandExpression(
   return { firstCommand, lastCommand }
 }
 
+const INDENT_SIZE = 2
+
 function parseAx(input: string): ParseResult {
   const lines = input.split('\n')
   let indentSpacesCount = 0
-  const INDENT_SIZE = 2
   const root: PartialAx = { name: '' }
   let currentCommand = root
   const commandStack = [root]
@@ -198,6 +206,111 @@ function parseAx(input: string): ParseResult {
     lineNumber++
   }
   return { type: 'success', result: completeAx(root) }
+}
+
+function prettyPrintName(name: string): string {
+  WORD_REGEX.lastIndex = 0
+  if (WORD_REGEX.exec(name) && WORD_REGEX.lastIndex === name.length) {
+    return name
+  }
+  return JSON.stringify(name)
+}
+
+const SPACES_MEMO = new Map<number, string>()
+function getSpaces(count: number): string {
+  if (!SPACES_MEMO.has(count)) {
+    SPACES_MEMO.set(count, new Array(count + 1).join(' '))
+  }
+  return SPACES_MEMO.get(count)!
+}
+
+function prettyPrint(ax: Ax, lineLength: number): string {
+  if (!ax.name) {
+    // root
+    return ax.parameters.map(a => doPrettyPrint(a, lineLength)).join('')
+  }
+  return doPrettyPrint(ax, lineLength)
+}
+
+function doPrettyPrint(
+  ax: Ax,
+  lineLength: number,
+  indentSpacesCount = 0,
+  leftOnLine = lineLength
+): string {
+  const name = prettyPrintName(ax.name)
+  const firstParameter = ax.parameters[0]
+  if (!firstParameter) {
+    return name + '\n'
+  }
+  if (ax.parameters.length === 1) {
+    if (
+      name.length + 1 + prettyPrintName(firstParameter.name).length <=
+      leftOnLine
+    ) {
+      return (
+        name +
+        ' ' +
+        doPrettyPrint(
+          firstParameter,
+          lineLength,
+          indentSpacesCount,
+          leftOnLine - name.length - 1
+        )
+      )
+    }
+  } else {
+    const lastParameter = ax.parameters[ax.parameters.length - 1]
+    const allButLastParameter = ax.parameters
+      .slice(0, -1)
+      .map(prettyPrintLinearLine)
+    if (allButLastParameter.every(x => x !== null)) {
+      const line = name + ': ' + allButLastParameter.join(', ') + ', '
+      if (
+        line.length + prettyPrintName(lastParameter.name).length <=
+        leftOnLine
+      ) {
+        return (
+          line +
+          doPrettyPrint(
+            lastParameter,
+            lineLength,
+            indentSpacesCount,
+            leftOnLine - line.length
+          )
+        )
+      }
+    }
+  }
+
+  const newIndent = indentSpacesCount + INDENT_SIZE
+  return (
+    name +
+    '\n' +
+    ax.parameters
+      .map(
+        a =>
+          getSpaces(newIndent) +
+          doPrettyPrint(a, lineLength, newIndent, lineLength - newIndent)
+      )
+      .join('')
+  )
+}
+
+function prettyPrintLinearLine(ax: Ax): string | null {
+  const firstParameter = ax.parameters[0]
+  if (!firstParameter) {
+    return prettyPrintName(ax.name)
+  } else if (ax.parameters.length === 1) {
+    const parameter = prettyPrintLinearLine(firstParameter)
+    if (parameter !== null) {
+      return prettyPrintName(ax.name) + ' ' + parameter
+    } else {
+      return null
+    }
+  } else {
+    return null
+  }
 }
 
 const root = document.getElementById('root')
