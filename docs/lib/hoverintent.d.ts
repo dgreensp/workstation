@@ -14,12 +14,10 @@ declare module "hoverintent" {
 
   export default function hoverintent(
     el: HTMLElement,
-    // technically, onOver and onOut are passed the Event that caused them,
-    // but it's not clear how useful these events are.  they aren't necessarily
-    // MouseEvents, because hoverintent can be configured to listen to focus
-    // and blur as well.
-    onOver: () => void,
-    onOut: () => void
+    // we use Event instead of MouseEvent because onOver and onOut may be
+    // passed focus/blur events if you use the handleFocus option
+    onOver: (e: Event) => void,
+    onOut: (e: Event) => void
   ): HoverIntentHandle
 
 }

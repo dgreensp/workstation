@@ -1,0 +1,16 @@
+.colLeft {
+  background: #ccc
+}
+
+.colRight {
+  background: #ddd
+}
+
+.inputWrapper {
+  position: relative
+}
+
+textarea.input {
+  height: 500px;
+  margin-bottom: 1rem;
+}

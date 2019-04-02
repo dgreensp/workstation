@@ -1,5 +1,10 @@
 {
   "devDependencies": {
     "typescript": "^3.3.3333"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5"
   }
 }
