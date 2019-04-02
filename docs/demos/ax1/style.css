@@ -1,16 +1,20 @@
 .colLeft {
-  background: #ccc
+  background: #ccc;
 }
 
 .colRight {
-  background: #ddd
+  background: #ddd;
 }
 
 .inputWrapper {
-  position: relative
+  position: relative;
 }
 
 textarea.input {
   height: 500px;
   margin-bottom: 1rem;
+}
+
+.failure {
+  color: red;
 }
