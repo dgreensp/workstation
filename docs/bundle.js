@@ -551,18 +551,18 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
     function App() {
         const input = live_1.useLiveVar(() => '');
         const inputValue = live_1.useListen(input);
-        return (react_3.default.createElement("main", { role: "main", className: "container mt-5" },
+        return (react_3.default.createElement("main", { role: "main", className: "container mt-3" },
             react_3.default.createElement("div", { className: "row" },
-                react_3.default.createElement("div", { className: "col-sm colLeft" },
+                react_3.default.createElement("div", { className: "col-md colLeft" },
                     react_3.default.createElement("div", { className: "px-3 pt-4" },
                         react_3.default.createElement("div", { className: "inputWrapper" },
                             react_3.default.createElement("textarea", { className: "form-control text-monospace input", value: inputValue, onChange: e => input(e.target.value) })))),
-                react_3.default.createElement("div", { className: "col-sm colRight" },
+                react_3.default.createElement("div", { className: "col-md colRight" },
                     react_3.default.createElement("div", { className: "px-3" },
                         react_3.default.createElement(TabbedOutput, { input: inputValue }))))));
     }
     function TabbedOutput({ input }) {
-        const [mode, setMode] = react_3.useState('Parser');
+        const [mode, setMode] = react_3.useState('Pretty Printer');
         const setModeParser = react_3.useCallback(() => setMode('Parser'), []);
         const setModePrettyPrinter = react_3.useCallback(() => setMode('Pretty Printer'), []);
         const setModeDOM = react_3.useCallback(() => setMode('DOM'), []);

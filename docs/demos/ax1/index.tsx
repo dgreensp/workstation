@@ -8,9 +8,9 @@ function App() {
   const inputValue = useListen(input)
 
   return (
-    <main role="main" className="container mt-5">
+    <main role="main" className="container mt-3">
       <div className="row">
-        <div className="col-sm colLeft">
+        <div className="col-md colLeft">
           <div className="px-3 pt-4">
             <div className="inputWrapper">
               <textarea
@@ -21,7 +21,7 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="col-sm colRight">
+        <div className="col-md colRight">
           <div className="px-3">
             <TabbedOutput input={inputValue} />
           </div>
@@ -31,8 +31,9 @@ function App() {
   )
 }
 
+
 function TabbedOutput({ input }: { input: string }) {
-  const [mode, setMode] = useState('Parser')
+  const [mode, setMode] = useState('Pretty Printer')
   const setModeParser = useCallback(() => setMode('Parser'), [])
   const setModePrettyPrinter = useCallback(() => setMode('Pretty Printer'), [])
   const setModeDOM = useCallback(() => setMode('DOM'), [])
