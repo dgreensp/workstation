@@ -359,7 +359,8 @@ function doPrettyPrint(
   ax: Ax,
   lineLength: number,
   indentSpacesCount = 0,
-  leftOnLine = lineLength
+  leftOnLine = lineLength,
+  afterComma = false
 ): string {
   const name = prettyPrintName(ax.name)
   const firstParameter = ax.parameters[0]
@@ -378,11 +379,12 @@ function doPrettyPrint(
           firstParameter,
           lineLength,
           indentSpacesCount,
-          leftOnLine - name.length - 1
+          leftOnLine - name.length - 1,
+          afterComma
         )
       )
     }
-  } else {
+  } else if (!afterComma) {
     const lastParameter = ax.parameters[ax.parameters.length - 1]
     const allButLastParameter = ax.parameters
       .slice(0, -1)
@@ -399,7 +401,8 @@ function doPrettyPrint(
             lastParameter,
             lineLength,
             indentSpacesCount,
-            leftOnLine - line.length
+            leftOnLine - line.length,
+            true
           )
         )
       }

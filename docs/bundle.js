@@ -814,7 +814,7 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
         }
         return doPrettyPrint(ax, lineLength);
     }
-    function doPrettyPrint(ax, lineLength, indentSpacesCount = 0, leftOnLine = lineLength) {
+    function doPrettyPrint(ax, lineLength, indentSpacesCount = 0, leftOnLine = lineLength, afterComma = false) {
         const name = prettyPrintName(ax.name);
         const firstParameter = ax.parameters[0];
         if (!firstParameter) {
@@ -825,10 +825,10 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
                 leftOnLine) {
                 return (name +
                     ' ' +
-                    doPrettyPrint(firstParameter, lineLength, indentSpacesCount, leftOnLine - name.length - 1));
+                    doPrettyPrint(firstParameter, lineLength, indentSpacesCount, leftOnLine - name.length - 1, afterComma));
             }
         }
-        else {
+        else if (!afterComma) {
             const lastParameter = ax.parameters[ax.parameters.length - 1];
             const allButLastParameter = ax.parameters
                 .slice(0, -1)
@@ -838,7 +838,7 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
                 if (line.length + prettyPrintName(lastParameter.name).length <=
                     leftOnLine) {
                     return (line +
-                        doPrettyPrint(lastParameter, lineLength, indentSpacesCount, leftOnLine - line.length));
+                        doPrettyPrint(lastParameter, lineLength, indentSpacesCount, leftOnLine - line.length, true));
                 }
             }
         }
