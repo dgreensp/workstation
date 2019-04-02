@@ -543,7 +543,7 @@ define("lib/live/index", ["require", "exports", "lib/live/Receiver", "lib/live/L
     __export(LiveVar_2);
     __export(hooks_1);
 });
-define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live/index"], function (require, exports, react_3, react_dom_1, live_1) {
+define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live/index", "reactstrap"], function (require, exports, react_3, react_dom_1, live_1, reactstrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_3 = __importStar(react_3);
@@ -558,15 +558,110 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
                         react_3.default.createElement("div", { className: "inputWrapper" },
                             react_3.default.createElement("textarea", { className: "form-control text-monospace input", value: inputValue, onChange: e => input(e.target.value) })))),
                 react_3.default.createElement("div", { className: "col-sm colRight" },
-                    react_3.default.createElement("div", { className: "px-3 pt-4" },
-                        react_3.default.createElement(ParserOutput, { input: inputValue }))))));
+                    react_3.default.createElement("div", { className: "px-3" },
+                        react_3.default.createElement(TabbedOutput, { input: inputValue }))))));
     }
-    function ParserOutput({ input }) {
+    function TabbedOutput({ input }) {
+        const [mode, setMode] = react_3.useState('Parser');
+        const setModeParser = react_3.useCallback(() => setMode('Parser'), []);
+        const setModePrettyPrinter = react_3.useCallback(() => setMode('Pretty Printer'), []);
+        const setModeDOM = react_3.useCallback(() => setMode('DOM'), []);
+        return (react_3.default.createElement(react_3.default.Fragment, null,
+            react_3.default.createElement(reactstrap_1.Nav, { className: "mb-4", tabs: true },
+                react_3.default.createElement(reactstrap_1.NavItem, null,
+                    react_3.default.createElement(reactstrap_1.NavLink, { href: "#", active: mode === 'Parser', onClick: setModeParser }, "Parser")),
+                react_3.default.createElement(reactstrap_1.NavItem, null,
+                    react_3.default.createElement(reactstrap_1.NavLink, { href: "#", active: mode === 'Pretty Printer', onClick: setModePrettyPrinter }, "Pretty Printer")),
+                react_3.default.createElement(reactstrap_1.NavItem, null,
+                    react_3.default.createElement(reactstrap_1.NavLink, { href: "#", active: mode === 'DOM', onClick: setModeDOM }, "DOM"))),
+            react_3.default.createElement(ParserOutput, { input: input, mode: mode })));
+    }
+    function ParserOutput({ input, mode }) {
         const result = react_3.useMemo(() => parseAx(input), [input]);
-        const formattedResult = JSON.stringify(result, null, 2);
-        const prettyPrinted = result.type === 'success' ? prettyPrint(result.result, 80) : null;
-        return (react_3.default.createElement("pre", null,
-            react_3.default.createElement("code", { className: result.type }, result.type === 'success' ? prettyPrinted : formattedResult)));
+        if (result.type === 'failure') {
+            return (react_3.default.createElement("pre", null,
+                react_3.default.createElement("code", { className: "failure" }, JSON.stringify(result, null, 2))));
+        }
+        const parsed = result.result;
+        if (mode === 'DOM') {
+            try {
+                return toDOM(parsed);
+            }
+            catch (e) {
+                return react_3.default.createElement("span", { className: "failure" }, e.message);
+            }
+        }
+        else if (mode === 'Pretty Printer') {
+            const prettied = prettyPrint(parsed, 40);
+            return (react_3.default.createElement("pre", null,
+                react_3.default.createElement("code", null, prettied)));
+        }
+        else {
+            return (react_3.default.createElement("pre", null,
+                react_3.default.createElement("code", null, JSON.stringify(result, null, 2))));
+        }
+    }
+    function toDOM(ax, key = 0) {
+        if (!ax.name) {
+            const children = [];
+            let i = 0;
+            for (const parameter of ax.parameters) {
+                children.push(toDOM(parameter, i));
+                i++;
+            }
+            return react_3.default.createElement(react_3.default.Fragment, { key: key }, children);
+        }
+        if (ax.name === 'div') {
+            const attributes = {};
+            const children = [];
+            let i = 0;
+            for (const parameter of ax.parameters) {
+                const { name, parameters } = parameter;
+                if (name === 'class') {
+                    attributes.className = parameters.map(toClassName).join(' ');
+                }
+                else if (name === 'style') {
+                    attributes.style = toStyleDictionary(parameters);
+                }
+                else {
+                    children.push(toDOM(parameter, i));
+                }
+                i++;
+            }
+            return (react_3.default.createElement("div", Object.assign({}, attributes, { key: key }), children));
+        }
+        else if (ax.name === 'text') {
+            return (react_3.default.createElement(react_3.default.Fragment, { key: key }, ax.parameters.map(a => toStringLiteral(a))));
+        }
+        else {
+            throw new Error('unknown command: ' + ax.name);
+        }
+    }
+    function toStyleDictionary(ax) {
+        const result = {};
+        for (const { name, parameters } of ax) {
+            if (parameters.length !== 1) {
+                throw new Error('bad key/value pair');
+            }
+            const value = toStringLiteral(parameters[0]);
+            result[name] = value;
+        }
+        return result;
+    }
+    function toClassName(ax) {
+        const str = toStringLiteral(ax);
+        if (/^-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/.test(str)) {
+            return str;
+        }
+        else {
+            throw new Error('not a class name');
+        }
+    }
+    function toStringLiteral(ax) {
+        if (ax.parameters.length) {
+            throw new Error('not a string literal: ' + ax.name);
+        }
+        return ax.name;
     }
     const NO_PARAMETERS = Object.seal([]); // shared object for performance
     function pushParameter(command, parameter) {
@@ -927,7 +1022,7 @@ define("demos/popover/popper", ["require", "exports", "react", "react-popper", "
     }
     exports.PopperInner = PopperInner;
 });
-define("demos/popover/settings", ["require", "exports", "react", "reactstrap", "demos/popover/LiveRef"], function (require, exports, react_7, reactstrap_1, LiveRef_2) {
+define("demos/popover/settings", ["require", "exports", "react", "reactstrap", "demos/popover/LiveRef"], function (require, exports, react_7, reactstrap_2, LiveRef_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_7 = __importDefault(react_7);
@@ -941,21 +1036,21 @@ define("demos/popover/settings", ["require", "exports", "react", "reactstrap", "
     function SettingsForm({ settings }) {
         const showArrow = LiveRef_2.useLiveRefState(settings.showArrow);
         const forceOpen = LiveRef_2.useLiveRefState(settings.forceOpen);
-        return react_7.default.createElement(reactstrap_1.Form, null,
-            react_7.default.createElement(reactstrap_1.FormGroup, { check: true },
-                react_7.default.createElement(reactstrap_1.Label, { check: true },
-                    react_7.default.createElement(reactstrap_1.Input, { type: "checkbox", id: "showArrow", checked: showArrow, onChange: e => settings.showArrow(e.target.checked) }),
+        return react_7.default.createElement(reactstrap_2.Form, null,
+            react_7.default.createElement(reactstrap_2.FormGroup, { check: true },
+                react_7.default.createElement(reactstrap_2.Label, { check: true },
+                    react_7.default.createElement(reactstrap_2.Input, { type: "checkbox", id: "showArrow", checked: showArrow, onChange: e => settings.showArrow(e.target.checked) }),
                     ' ',
                     "Show Arrow")),
-            react_7.default.createElement(reactstrap_1.FormGroup, { check: true },
-                react_7.default.createElement(reactstrap_1.Label, { check: true },
-                    react_7.default.createElement(reactstrap_1.Input, { type: "checkbox", id: "forceOpen", checked: forceOpen, onChange: e => settings.forceOpen(e.target.checked) }),
+            react_7.default.createElement(reactstrap_2.FormGroup, { check: true },
+                react_7.default.createElement(reactstrap_2.Label, { check: true },
+                    react_7.default.createElement(reactstrap_2.Input, { type: "checkbox", id: "forceOpen", checked: forceOpen, onChange: e => settings.forceOpen(e.target.checked) }),
                     ' ',
                     "Force Open")));
     }
     exports.SettingsForm = SettingsForm;
 });
-define("demos/popover/index", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover/LiveRef", "demos/popover/hooks", "demos/popover/hover", "demos/popover/popper", "demos/popover/settings"], function (require, exports, react_8, react_dom_2, reactstrap_2, LiveRef_3, hooks_4, hover_1, popper_1, settings_1) {
+define("demos/popover/index", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover/LiveRef", "demos/popover/hooks", "demos/popover/hover", "demos/popover/popper", "demos/popover/settings"], function (require, exports, react_8, react_dom_2, reactstrap_3, LiveRef_3, hooks_4, hover_1, popper_1, settings_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_8 = __importDefault(react_8);
@@ -988,9 +1083,9 @@ define("demos/popover/index", ["require", "exports", "react", "react-dom", "reac
             react_8.default.createElement("p", null,
                 "This link has a ",
                 react_8.default.createElement("a", { ref: targetRef, href: "#" }, "popover")),
-            react_8.default.createElement(ComputeShown, null, shown => react_8.default.createElement(reactstrap_2.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
+            react_8.default.createElement(ComputeShown, null, shown => react_8.default.createElement(reactstrap_3.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
                 react_8.default.createElement(BoundPopper, { placement: "bottom", innerRef: popoverRef }, args => react_8.default.createElement(popper_1.PopperInner, { args: args, showArrow: showArrow },
-                    react_8.default.createElement(reactstrap_2.PopoverBody, null,
+                    react_8.default.createElement(reactstrap_3.PopoverBody, null,
                         react_8.default.createElement("h1", null, "Woohoo"),
                         react_8.default.createElement("p", null, "This is all inside the popover.")))))));
     }
@@ -998,7 +1093,7 @@ define("demos/popover/index", ["require", "exports", "react", "react-dom", "reac
         const settings = settings_1.useSettings();
         const code = hooks_4.usePromise(getCode);
         return react_8.default.createElement("main", { role: "main", className: "container mt-5" },
-            react_8.default.createElement(reactstrap_2.Jumbotron, null,
+            react_8.default.createElement(reactstrap_3.Jumbotron, null,
                 react_8.default.createElement("h1", null, "Hello, Reactstrap!"),
                 react_8.default.createElement(ParagraphWithPopover, { settings: settings })),
             react_8.default.createElement("h4", null, "Settings:"),
@@ -1170,7 +1265,7 @@ define("demos/popover-classes/components/ListenableHover", ["require", "exports"
     }
     exports.createListenableHover = createListenableHover;
 });
-define("demos/popover-classes/components/Popover", ["require", "exports", "react", "reactstrap", "demos/popover-classes/components/ListenableHover", "demos/popover-classes/live/index", "react-popper"], function (require, exports, react_10, reactstrap_3, ListenableHover_1, live_3, react_popper_2) {
+define("demos/popover-classes/components/Popover", ["require", "exports", "react", "reactstrap", "demos/popover-classes/components/ListenableHover", "demos/popover-classes/live/index", "react-popper"], function (require, exports, react_10, reactstrap_4, ListenableHover_1, live_3, react_popper_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_10 = __importDefault(react_10);
@@ -1187,7 +1282,7 @@ define("demos/popover-classes/components/Popover", ["require", "exports", "react
                     referenceElement,
                 } }, ({ isTargetHovered, isPopoverHovered, referenceElement }) => {
                 const shown = isTargetHovered || isPopoverHovered || forceOpen;
-                return react_10.default.createElement(reactstrap_3.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
+                return react_10.default.createElement(reactstrap_4.Fade, { in: shown, mountOnEnter: true, unmountOnExit: true, enter: false },
                     react_10.default.createElement(react_popper_2.Popper, { referenceElement: referenceElement || undefined, placement: placement, innerRef: popoverHover.targetElement, key: String(showArrow) }, ({ ref, style, arrowProps }) => 
                     // Attach Popover's refs and styles, and apply Bootstrap classes.
                     // The caller is expected to nest popover-header and/or popover-body inside.
@@ -1201,7 +1296,7 @@ define("demos/popover-classes/components/Popover", ["require", "exports", "react
     }
     exports.createPopover = createPopover;
 });
-define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/components/Popover"], function (require, exports, react_11, react_dom_3, reactstrap_4, Popover_1) {
+define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/components/Popover"], function (require, exports, react_11, react_dom_3, reactstrap_5, Popover_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_11 = __importDefault(react_11);
@@ -1218,7 +1313,7 @@ define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom
                     "This link has a ",
                     react_11.default.createElement("a", { ref: this.popover.referenceElement, href: "#" }, "popover")),
                 react_11.default.createElement(BoundPopover, { placement: "bottom" },
-                    react_11.default.createElement(reactstrap_4.PopoverBody, null,
+                    react_11.default.createElement(reactstrap_5.PopoverBody, null,
                         react_11.default.createElement("h1", null, "Woohoo"),
                         react_11.default.createElement("p", null, "This is all inside the popover."))));
         }
@@ -1226,7 +1321,7 @@ define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom
     class App extends react_11.default.Component {
         render() {
             return react_11.default.createElement("main", { role: "main", className: "container mt-5" },
-                react_11.default.createElement(reactstrap_4.Jumbotron, null,
+                react_11.default.createElement(reactstrap_5.Jumbotron, null,
                     react_11.default.createElement("h1", null, "Hello, Reactstrap!"),
                     react_11.default.createElement(ParagraphWithPopover, null)));
         }
@@ -1234,7 +1329,7 @@ define("demos/popover-classes/basic", ["require", "exports", "react", "react-dom
     const root = document.getElementById('root');
     react_dom_3.default.render(react_11.default.createElement(App, null), root);
 });
-define("demos/popover-classes/settings", ["require", "exports", "react", "reactstrap", "demos/popover-classes/live/index"], function (require, exports, react_12, reactstrap_5, live_4) {
+define("demos/popover-classes/settings", ["require", "exports", "react", "reactstrap", "demos/popover-classes/live/index"], function (require, exports, react_12, reactstrap_6, live_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_12 = __importDefault(react_12);
@@ -1246,21 +1341,21 @@ define("demos/popover-classes/settings", ["require", "exports", "react", "reacts
     }
     exports.createSettings = createSettings;
     function SettingsForm({ settings }) {
-        return react_12.default.createElement(live_4.Listen, { to: settings }, ({ showArrow, forceOpen }) => react_12.default.createElement(reactstrap_5.Form, null,
-            react_12.default.createElement(reactstrap_5.FormGroup, { check: true },
-                react_12.default.createElement(reactstrap_5.Label, { check: true },
-                    react_12.default.createElement(reactstrap_5.Input, { type: "checkbox", id: "showArrow", checked: showArrow, onChange: e => settings.showArrow(e.target.checked) }),
+        return react_12.default.createElement(live_4.Listen, { to: settings }, ({ showArrow, forceOpen }) => react_12.default.createElement(reactstrap_6.Form, null,
+            react_12.default.createElement(reactstrap_6.FormGroup, { check: true },
+                react_12.default.createElement(reactstrap_6.Label, { check: true },
+                    react_12.default.createElement(reactstrap_6.Input, { type: "checkbox", id: "showArrow", checked: showArrow, onChange: e => settings.showArrow(e.target.checked) }),
                     ' ',
                     "Show Arrow")),
-            react_12.default.createElement(reactstrap_5.FormGroup, { check: true },
-                react_12.default.createElement(reactstrap_5.Label, { check: true },
-                    react_12.default.createElement(reactstrap_5.Input, { type: "checkbox", id: "forceOpen", checked: forceOpen, onChange: e => settings.forceOpen(e.target.checked) }),
+            react_12.default.createElement(reactstrap_6.FormGroup, { check: true },
+                react_12.default.createElement(reactstrap_6.Label, { check: true },
+                    react_12.default.createElement(reactstrap_6.Input, { type: "checkbox", id: "forceOpen", checked: forceOpen, onChange: e => settings.forceOpen(e.target.checked) }),
                     ' ',
                     "Force Open"))));
     }
     exports.SettingsForm = SettingsForm;
 });
-define("demos/popover-classes/index", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/settings", "demos/popover-classes/live/index", "demos/popover-classes/components/Popover"], function (require, exports, react_13, react_dom_4, reactstrap_6, settings_2, live_5, Popover_2) {
+define("demos/popover-classes/index", ["require", "exports", "react", "react-dom", "reactstrap", "demos/popover-classes/settings", "demos/popover-classes/live/index", "demos/popover-classes/components/Popover"], function (require, exports, react_13, react_dom_4, reactstrap_7, settings_2, live_5, Popover_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_13 = __importDefault(react_13);
@@ -1280,7 +1375,7 @@ define("demos/popover-classes/index", ["require", "exports", "react", "react-dom
                         forceOpen: this.props.settings.forceOpen,
                         showArrow: this.props.settings.showArrow,
                     } }, ({ forceOpen, showArrow }) => react_13.default.createElement(BoundPopover, { forceOpen: forceOpen, showArrow: showArrow, placement: "bottom" },
-                    react_13.default.createElement(reactstrap_6.PopoverBody, null,
+                    react_13.default.createElement(reactstrap_7.PopoverBody, null,
                         react_13.default.createElement("h1", null, "Woohoo"),
                         react_13.default.createElement("p", null, "This is all inside the popover.")))));
         }
@@ -1292,7 +1387,7 @@ define("demos/popover-classes/index", ["require", "exports", "react", "react-dom
         }
         render() {
             return react_13.default.createElement("main", { role: "main", className: "container mt-5" },
-                react_13.default.createElement(reactstrap_6.Jumbotron, null,
+                react_13.default.createElement(reactstrap_7.Jumbotron, null,
                     react_13.default.createElement("h1", null, "Hello, Reactstrap!"),
                     react_13.default.createElement(ParagraphWithPopover, { settings: this.settings })),
                 react_13.default.createElement("h4", null, "Settings:"),
@@ -1313,7 +1408,7 @@ define("demos/react-hello-world/index", ["require", "exports", "react", "react-d
     const root = document.getElementById('root');
     react_dom_5.default.render(react_14.default.createElement(App, null), root);
 });
-define("demos/reactstrap-hello-world/index", ["require", "exports", "react", "react-dom", "reactstrap"], function (require, exports, react_15, react_dom_6, reactstrap_7) {
+define("demos/reactstrap-hello-world/index", ["require", "exports", "react", "react-dom", "reactstrap"], function (require, exports, react_15, react_dom_6, reactstrap_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_15 = __importDefault(react_15);
@@ -1321,7 +1416,7 @@ define("demos/reactstrap-hello-world/index", ["require", "exports", "react", "re
     function App() {
         return react_15.default.createElement("main", { role: "main", className: "container mt-5" },
             react_15.default.createElement("h1", null, "Hello, Reactstrap!"),
-            react_15.default.createElement(reactstrap_7.Alert, { color: "primary" }, "This is a primary alert \u2014 check it out!"));
+            react_15.default.createElement(reactstrap_8.Alert, { color: "primary" }, "This is a primary alert \u2014 check it out!"));
     }
     const root = document.getElementById('root');
     react_dom_6.default.render(react_15.default.createElement(App, null), root);

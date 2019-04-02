@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import ReactDOM from 'react-dom'
 import { useLiveVar, useListen } from 'lib/live'
+import { Nav, NavItem, NavLink } from 'reactstrap'
 
 function App() {
   const input = useLiveVar(() => '')
@@ -21,8 +22,8 @@ function App() {
           </div>
         </div>
         <div className="col-sm colRight">
-          <div className="px-3 pt-4">
-            <ParserOutput input={inputValue} />
+          <div className="px-3">
+            <TabbedOutput input={inputValue} />
           </div>
         </div>
       </div>
@@ -30,24 +31,146 @@ function App() {
   )
 }
 
-function ParserOutput({ input }: { input: string }) {
-  const result = useMemo(() => parseAx(input), [input])
-  const formattedResult = JSON.stringify(result, null, 2)
-  const prettyPrinted =
-    result.type === 'success' ? prettyPrint(result.result, 80) : null
+function TabbedOutput({ input }: { input: string }) {
+  const [mode, setMode] = useState('Parser')
+  const setModeParser = useCallback(() => setMode('Parser'), [])
+  const setModePrettyPrinter = useCallback(() => setMode('Pretty Printer'), [])
+  const setModeDOM = useCallback(() => setMode('DOM'), [])
   return (
-    <pre>
-      <code className={result.type}>
-        {result.type === 'success' ? prettyPrinted : formattedResult}
-      </code>
-    </pre>
+    <>
+      <Nav className="mb-4" tabs>
+        <NavItem>
+          <NavLink href="#" active={mode === 'Parser'} onClick={setModeParser}>
+            Parser
+          </NavLink>
+        </NavItem>
+        <NavItem>
+          <NavLink
+            href="#"
+            active={mode === 'Pretty Printer'}
+            onClick={setModePrettyPrinter}
+          >
+            Pretty Printer
+          </NavLink>
+        </NavItem>
+        <NavItem>
+          <NavLink href="#" active={mode === 'DOM'} onClick={setModeDOM}>
+            DOM
+          </NavLink>
+        </NavItem>
+      </Nav>
+      <ParserOutput input={input} mode={mode} />
+    </>
   )
+}
+
+function ParserOutput({ input, mode }: { input: string; mode: string }) {
+  const result = useMemo(() => parseAx(input), [input])
+  if (result.type === 'failure') {
+    return (
+      <pre>
+        <code className="failure">{JSON.stringify(result, null, 2)}</code>
+      </pre>
+    )
+  }
+  const parsed = result.result
+  if (mode === 'DOM') {
+    try {
+      return toDOM(parsed)
+    } catch (e) {
+      return <span className="failure">{e.message}</span>
+    }
+  } else if (mode === 'Pretty Printer') {
+    const prettied = prettyPrint(parsed, 40)
+    return (
+      <pre>
+        <code>{prettied}</code>
+      </pre>
+    )
+  } else {
+    return (
+      <pre>
+        <code>{JSON.stringify(result, null, 2)}</code>
+      </pre>
+    )
+  }
+}
+
+function toDOM(ax: Ax, key = 0): React.ReactElement {
+  if (!ax.name) {
+    const children = []
+    let i = 0
+    for (const parameter of ax.parameters) {
+      children.push(toDOM(parameter, i))
+      i++
+    }
+    return <React.Fragment key={key}>{children}</React.Fragment>
+  }
+  if (ax.name === 'div') {
+    const attributes = {} as any
+    const children = []
+    let i = 0
+    for (const parameter of ax.parameters) {
+      const { name, parameters } = parameter
+      if (name === 'class') {
+        attributes.className = parameters.map(toClassName).join(' ')
+      } else if (name === 'style') {
+        attributes.style = toStyleDictionary(parameters)
+      } else {
+        children.push(toDOM(parameter, i))
+      }
+      i++
+    }
+    return (
+      <div {...attributes} key={key}>
+        {children}
+      </div>
+    )
+  } else if (ax.name === 'text') {
+    return (
+      <React.Fragment key={key}>
+        {ax.parameters.map(a => toStringLiteral(a))}
+      </React.Fragment>
+    )
+  } else {
+    throw new Error('unknown command: ' + ax.name)
+  }
+}
+
+function toStyleDictionary(ax: AxParameters): any {
+  const result = {} as any
+  for (const { name, parameters } of ax) {
+    if (parameters.length !== 1) {
+      throw new Error('bad key/value pair')
+    }
+    const value = toStringLiteral(parameters[0])
+    result[name] = value
+  }
+  return result
+}
+
+function toClassName(ax: Ax): string {
+  const str = toStringLiteral(ax)
+  if (/^-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/.test(str)) {
+    return str
+  } else {
+    throw new Error('not a class name')
+  }
+}
+
+function toStringLiteral(ax: Ax): string {
+  if (ax.parameters.length) {
+    throw new Error('not a string literal: ' + ax.name)
+  }
+  return ax.name
 }
 
 interface Ax {
   readonly name: string
-  readonly parameters: ReadonlyArray<Ax>
+  readonly parameters: AxParameters
 }
+
+type AxParameters = ReadonlyArray<Ax>
 
 interface PartialAx {
   readonly name: string
