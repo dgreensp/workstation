@@ -61,7 +61,9 @@ function pushParameter(command: PartialAx, parameter: PartialAx): void {
 function completeAx(partial: PartialAx): Ax {
   return {
     name: partial.name,
-    parameters: partial.parameters ? partial.parameters.map(completeAx) : NO_PARAMETERS,
+    parameters: partial.parameters
+      ? partial.parameters.map(completeAx)
+      : NO_PARAMETERS,
   }
 }
 
@@ -97,10 +99,23 @@ interface ParseFailure {
 
 type ParseResult = ParseSuccess | ParseFailure
 
+function parseName(s: Scanner): string | null {
+  const stringMatch = s.match(/"([^"\\]*|\\["\\bfnrt\/]|\\u[0-9a-f]{4})*"/y)
+  if (stringMatch) {
+    return JSON.parse(stringMatch[0])
+  } else {
+    const wordMatch = s.match(/[^\s":,]+/y)
+    if (wordMatch) {
+      return wordMatch[0]
+    }
+  }
+  return null
+}
+
 function parseAx(input: string): ParseResult {
   const lines = input.split('\n')
   let indentSpacesCount = 0
-  const INDENT_SIZE = 2;
+  const INDENT_SIZE = 2
   const root: PartialAx = { name: '' }
   let currentCommand = root
   const commandStack = [root]
@@ -119,15 +134,26 @@ function parseAx(input: string): ParseResult {
     if (spaces.length !== indentSpacesCount) {
       return failure('indent')
     }
-    const wordMatch = s.match(/\S+/y)
-    if (!wordMatch) {
+    const name = parseName(s)
+    if (name === null) {
       return failure('expected command')
     }
-    const newCommand = { name: wordMatch[0] }
+    const newCommand = { name }
     pushParameter(currentCommand, newCommand)
     currentCommand = newCommand
     commandStack.push(newCommand)
     indentSpacesCount += INDENT_SIZE
+    while (s.match(/ /y)) {
+      const subname = parseName(s)
+      if (subname === null) {
+        return failure('expected command parameter')
+      }
+      const subcommand = { name: subname }
+      pushParameter(currentCommand, subcommand)
+      currentCommand = subcommand
+      commandStack.pop()
+      commandStack.push(subcommand)  
+    }
     if (!s.match(/$/my)) {
       return failure('expected end of line')
     }

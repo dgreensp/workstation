@@ -576,7 +576,9 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
     function completeAx(partial) {
         return {
             name: partial.name,
-            parameters: partial.parameters ? partial.parameters.map(completeAx) : NO_PARAMETERS,
+            parameters: partial.parameters
+                ? partial.parameters.map(completeAx)
+                : NO_PARAMETERS,
         };
     }
     class Scanner {
@@ -600,6 +602,19 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
             return this.match(re) || [''];
         }
     }
+    function parseName(s) {
+        const stringMatch = s.match(/"([^"\\]*|\\["\\bfnrt\/]|\\u[0-9a-f]{4})*"/y);
+        if (stringMatch) {
+            return JSON.parse(stringMatch[0]);
+        }
+        else {
+            const wordMatch = s.match(/[^\s":,]+/y);
+            if (wordMatch) {
+                return wordMatch[0];
+            }
+        }
+        return null;
+    }
     function parseAx(input) {
         const lines = input.split('\n');
         let indentSpacesCount = 0;
@@ -622,15 +637,26 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
             if (spaces.length !== indentSpacesCount) {
                 return failure('indent');
             }
-            const wordMatch = s.match(/\S+/y);
-            if (!wordMatch) {
+            const name = parseName(s);
+            if (name === null) {
                 return failure('expected command');
             }
-            const newCommand = { name: wordMatch[0] };
+            const newCommand = { name };
             pushParameter(currentCommand, newCommand);
             currentCommand = newCommand;
             commandStack.push(newCommand);
             indentSpacesCount += INDENT_SIZE;
+            while (s.match(/ /y)) {
+                const subname = parseName(s);
+                if (subname === null) {
+                    return failure('expected command parameter');
+                }
+                const subcommand = { name: subname };
+                pushParameter(currentCommand, subcommand);
+                currentCommand = subcommand;
+                commandStack.pop();
+                commandStack.push(subcommand);
+            }
             if (!s.match(/$/my)) {
                 return failure('expected end of line');
             }
