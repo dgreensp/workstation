@@ -871,6 +871,160 @@ define("demos/ax1/index", ["require", "exports", "react", "react-dom", "lib/live
     const root = document.getElementById('root');
     react_dom_1.default.render(react_3.default.createElement(App, null), root);
 });
+/*enum AxTokenType {
+  BLANK_LINE,
+  STRING,
+}
+
+interface AxStringToken {
+  readonly type: AxTokenType.STRING
+  readonly value: string
+  readonly children: AxToken[]
+  readonly comment?: string
+}
+
+interface AxBlankLineToken {
+  readonly type: AxTokenType.BLANK_LINE
+  readonly comment?: string
+}
+
+type AxToken = AxStringToken | AxBlankLineToken
+
+interface AxStringTokenBuilder {
+  addChild(child: AxToken): void
+  setComment(comment: string): void
+  build(): AxStringToken
+}
+
+interface AxStringTokenBuilderConfig {
+  value: string
+}
+
+const EMPTY_ARRAY = Object.seal([])
+
+function createAxStringTokenBuilder(
+  config: AxStringTokenBuilderConfig
+): AxStringTokenBuilder {
+  const { value } = config
+  let children: AxToken[] | undefined
+  let comment: string | undefined
+  return {
+    addChild(child: AxToken): void {
+      children = children || []
+      children.push(child)
+    },
+    setComment(newComment: string): void {
+      comment = newComment
+    },
+    build(): AxStringToken {
+      return {
+        type: AxTokenType.STRING,
+        value,
+        comment,
+        children: children || EMPTY_ARRAY,
+      }
+    },
+  }
+}
+
+class Scanner {
+  constructor(private input: string) {}
+  index = 0
+  match(re: RegExp): string[] | undefined {
+    if (!re.sticky) {
+      throw new Error('reg ex must be sticky')
+    }
+    re.lastIndex = this.index
+    const match = re.exec(this.input)
+    if (!match) {
+      return undefined
+    }
+    this.index = re.lastIndex
+    return match
+  }
+  matchAlways(re: RegExp): string[] {
+    return this.match(re) || ['']
+  }
+}
+*/ 
+define("demos/matcher/Matcher", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function exact(text) {
+        return (start, source) => {
+            const end = start + text.length;
+            return source.slice(start, end) === text ? end : null;
+        };
+    }
+    exports.exact = exact;
+    function makeSticky(re) {
+        let flags = re.flags;
+        if (!flags.includes('y')) {
+            flags = flags + 'y';
+        }
+        return new RegExp(re.source, flags);
+    }
+    function regex(re) {
+        re = makeSticky(re);
+        return (start, source) => {
+            re.lastIndex = start;
+            const result = re.exec(source);
+            return result ? re.lastIndex : null;
+        };
+    }
+    exports.regex = regex;
+    function takeRegex(re) {
+        const m = regex(re);
+        return (start, source) => {
+            const result = m(start, source);
+            return result === null ? start : result;
+        };
+    }
+    exports.takeRegex = takeRegex;
+    function zeroOrMore(m) {
+        return (start, source) => {
+            let current = start;
+            let result;
+            while ((result = m(current, source)) !== null) {
+                if (result === current) {
+                    break;
+                }
+                current = result;
+            }
+            return current;
+        };
+    }
+    exports.zeroOrMore = zeroOrMore;
+    function oneOrMore(m) {
+        return seq(m, zeroOrMore(m));
+    }
+    exports.oneOrMore = oneOrMore;
+    function seq(m, ...mm) {
+        return (start, source) => {
+            let result = m(start, source);
+            if (result === null) {
+                return result;
+            }
+            for (let i = 0; i < mm.length; i++) {
+                const newStart = result;
+                if (newStart === null) {
+                    return result;
+                }
+                result = mm[i](newStart, source);
+            }
+            return result;
+        };
+    }
+    exports.seq = seq;
+});
+define("demos/matcher/index", ["require", "exports", "demos/matcher/Matcher"], function (require, exports, Matcher_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const a = Matcher_1.exact('a');
+    const b = Matcher_1.zeroOrMore(a);
+    const c = Matcher_1.seq(b, Matcher_1.takeRegex(/[bc]/));
+    console.log(c(1, 'baaabd'));
+});
 define("demos/popover/hooks", ["require", "exports", "react"], function (require, exports, react_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
