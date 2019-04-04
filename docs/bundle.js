@@ -1560,7 +1560,7 @@ define("demos/prosemirror-hello-world/Editor", ["require", "exports", "react", "
     const nodes = {
         // :: NodeSpec The top level document node.
         doc: {
-            content: 'block+',
+            content: 'text*',
         },
         paragraph: {
             content: 'inline*',
@@ -1621,7 +1621,7 @@ define("demos/prosemirror-hello-world/Editor", ["require", "exports", "react", "
                 view.current = createEditorView(state, dom);
             }
         }, []);
-        return react_14.default.createElement("div", { className: "editor", ref: domCallback });
+        return react_14.default.createElement("div", { className: "editor form-control", ref: domCallback });
     }
     exports.Editor = Editor;
 });

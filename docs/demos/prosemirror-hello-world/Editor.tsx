@@ -15,7 +15,7 @@ const brDOM: DOMOutputSpecArray = ['br']
 const nodes = {
   // :: NodeSpec The top level document node.
   doc: {
-    content: 'block+',
+    content: 'text*',//'block+',
   },
   paragraph: {
     content: 'inline*',
@@ -84,5 +84,5 @@ export function Editor() {
     }
   }, [])
 
-  return <div className="editor" ref={domCallback}></div>
+  return <div className="editor form-control" ref={domCallback}></div>
 }
