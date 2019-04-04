@@ -1,5 +1,10 @@
 {
     "editor.tabSize": 2,
+    "editor.quickSuggestions": {
+        "other": false,
+        "comments": false,
+        "strings": false
+    },
     "eslint.enable": false,
     "tslint.enable": false,
     "files.exclude": {

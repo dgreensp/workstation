@@ -7,7 +7,7 @@ import { keymap } from 'prosemirror-keymap'
 import { Schema, DOMOutputSpecArray } from 'prosemirror-model'
 import { baseKeymap } from 'prosemirror-commands'
 
-import { useOnce } from 'lib/live/hooks'
+import { useOnce } from 'lib/live'
 
 const pDOM: DOMOutputSpecArray = ['p', 0]
 const brDOM: DOMOutputSpecArray = ['br']
