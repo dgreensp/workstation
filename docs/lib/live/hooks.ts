@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Receiver } from './Receiver'
-import { LiveVar, createLiveVar } from './LiveVar'
+import { Listenable } from './Listenable'
 
 // useOnce runs some code only on first render and remembers the result.  It's like
 // useMemo(() => ..., []), except technically useMemo is a performance optimization
@@ -14,13 +14,15 @@ export function useOnce<T>(compute: () => T): T {
   return ref.current.result
 }
 
+/* don't use this, instead just write this because it's more explicit:
+  useOnce(() => createLiveVar(...))
 export function useLiveVar<T>(initialValue: () => T): LiveVar<T> {
   return useOnce(() => createLiveVar(initialValue()))
-}
+}*/
 
-export function useListen<T>(v: LiveVar<T>): T {
+export function useListen<T>(v: Listenable<T>): T {
   const [state, setState] = useState<T>()
-  const ref = useRef<{ lastVar: LiveVar<T>; receiver: Receiver<T> }>()
+  const ref = useRef<{ lastVar: Listenable<T>; receiver: Receiver<T> }>()
   if (ref.current) {
     const { lastVar, receiver } = ref.current
     if (lastVar === v) {

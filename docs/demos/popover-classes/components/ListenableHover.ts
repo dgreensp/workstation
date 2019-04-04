@@ -1,5 +1,5 @@
 import { DOMReceiver, Listenable, createLiveVar } from '../live';
-import { HoverOptions, createHover } from './Hover';
+import { HoverOptions, createHover } from 'lib/Hover';
 
 export interface ListenableHover {
   targetElement: DOMReceiver

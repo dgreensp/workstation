@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useCallback } from 'react'
 import ReactDOM from 'react-dom'
-import { useLiveVar, useListen } from 'lib/live'
+import { useOnce, createLiveVar, useListen } from 'lib/live'
 import { Nav, NavItem, NavLink } from 'reactstrap'
 
 function App() {
-  const input = useLiveVar(() => '')
+  const input = useOnce(() => createLiveVar(''))
   const inputValue = useListen(input)
 
   return (

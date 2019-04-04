@@ -1,5 +1,5 @@
 import hoverintent, { HoverIntentOptions } from 'hoverintent';
-import { DOMReceiver } from '../live';
+import { DOMReceiver } from './live';
 
 export interface HoverOptions {
   intent?: boolean | HoverIntentOptions
@@ -12,8 +12,8 @@ export interface Hover {
 // This function returns a callback ref that will correctly set up and tear down the "hoverintent" package
 // when the element mounts and unmounts.
 // 
-// For "options" you can pass:
-// - `false` for plain hover with no intent
+// For options.intent you can pass:
+// - `false` for plain hover with no intent (the default)
 // - `true` for default hover intent
 // - an object with options to pass to the "hoverintent" package
 export function createHover(setIsHovered: (isHovered: boolean) => void, options: HoverOptions = {}): Hover {
@@ -34,7 +34,7 @@ export function createHover(setIsHovered: (isHovered: boolean) => void, options:
       handle = hoverintent(element, onOver, onOut);
       const { intent = false } = options;
       if (intent === false) {
-        handle.options({ sensitivity: Infinity });
+        handle.options({ sensitivity: Infinity, interval: 0 });
       } else if (typeof intent === 'object') {
         handle.options(intent);
       }
