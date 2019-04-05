@@ -6,10 +6,23 @@
 .buttonContainer > button {
   margin-bottom: 0.5rem;
   margin-right: 0.5rem;
+  border: 0;
+  background: #ddd;
+  touch-action: manipulation;
+  padding: 0.25rem 0.25rem;
 }
 
 .buttonContainer > button:focus {
   outline: 2px solid #9cf;
+}
+
+.menuItem {
+  border: 0;
+  background: #ddd;
+  margin-bottom: 0.5rem;
+  margin-right: 0.5rem;
+  touch-action: manipulation;
+  padding: 0.25rem 0.25rem;
 }
 
 .menuItem:focus {
