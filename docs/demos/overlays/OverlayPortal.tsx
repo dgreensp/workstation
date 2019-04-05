@@ -28,14 +28,14 @@ export function OverlayManager({ children }: OverlayManagerProps) {
   const { context, containerRef, mainAppRef } = useOnce(() => {
     let container: HTMLElement | null = null
     let mainApp: HTMLElement | null = null
-    /*const containerFocus = createFocus(isContainerFocused => {
+    const containerFocus = createFocus(isContainerFocused => {
       if (!mainApp) return
       if (isContainerFocused) {
         mainApp.setAttribute('aria-hidden', 'true')
       } else {
-        //mainApp.removeAttribute('aria-hidden')
+        mainApp.removeAttribute('aria-hidden')
       }
-    })*/
+    })
     const context = {
       attachDiv(div: HTMLElement, level: number, exclusive = false) {
         if (!container) return
@@ -63,7 +63,7 @@ export function OverlayManager({ children }: OverlayManagerProps) {
     }
     const containerRef = (element: HTMLElement | null) => {
       container = element
-      //containerFocus.targetElement(element)
+      containerFocus.targetElement(element)
     }
     const mainAppRef = (element: HTMLElement | null) => {
       mainApp = element

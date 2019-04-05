@@ -1188,7 +1188,7 @@ define("lib/Hover", ["require", "exports", "hoverintent"], function (require, ex
     }
     exports.createHover = createHover;
 });
-define("demos/overlays/OverlayPortal", ["require", "exports", "react", "react-dom", "lib/live/index", "demos/overlays/EventStopper"], function (require, exports, react_5, react_dom_2, live_2, EventStopper_1) {
+define("demos/overlays/OverlayPortal", ["require", "exports", "react", "react-dom", "lib/live/index", "demos/overlays/EventStopper", "demos/overlays/Focus"], function (require, exports, react_5, react_dom_2, live_2, EventStopper_1, Focus_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_5 = __importStar(react_5);
@@ -1198,14 +1198,16 @@ define("demos/overlays/OverlayPortal", ["require", "exports", "react", "react-do
         const { context, containerRef, mainAppRef } = live_2.useOnce(() => {
             let container = null;
             let mainApp = null;
-            /*const containerFocus = createFocus(isContainerFocused => {
-              if (!mainApp) return
-              if (isContainerFocused) {
-                mainApp.setAttribute('aria-hidden', 'true')
-              } else {
-                //mainApp.removeAttribute('aria-hidden')
-              }
-            })*/
+            const containerFocus = Focus_1.createFocus(isContainerFocused => {
+                if (!mainApp)
+                    return;
+                if (isContainerFocused) {
+                    mainApp.setAttribute('aria-hidden', 'true');
+                }
+                else {
+                    mainApp.removeAttribute('aria-hidden');
+                }
+            });
             const context = {
                 attachDiv(div, level, exclusive = false) {
                     if (!container)
@@ -1235,7 +1237,7 @@ define("demos/overlays/OverlayPortal", ["require", "exports", "react", "react-do
             };
             const containerRef = (element) => {
                 container = element;
-                //containerFocus.targetElement(element)
+                containerFocus.targetElement(element);
             };
             const mainAppRef = (element) => {
                 mainApp = element;
@@ -1297,7 +1299,7 @@ define("demos/overlays/HoverPopover", ["require", "exports", "react", "lib/live/
     }
     exports.createHoverPopover = createHoverPopover;
 });
-define("demos/overlays/buttons", ["require", "exports", "react", "react-dom", "demos/overlays/OverlayPortal", "lib/live/index", "demos/overlays/Focus", "demos/overlays/FocusTrap"], function (require, exports, react_7, react_dom_3, OverlayPortal_2, live_4, Focus_1, FocusTrap_1) {
+define("demos/overlays/buttons", ["require", "exports", "react", "react-dom", "demos/overlays/OverlayPortal", "lib/live/index", "demos/overlays/Focus", "demos/overlays/FocusTrap"], function (require, exports, react_7, react_dom_3, OverlayPortal_2, live_4, Focus_2, FocusTrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     react_7 = __importStar(react_7);
@@ -1333,7 +1335,7 @@ define("demos/overlays/buttons", ["require", "exports", "react", "react-dom", "d
             const isMenuOpen = live_4.createLiveVar(false);
             const firstMenuItemWaiter = createWaiter();
             const menuBlurWaiter = createWaiter();
-            const menuFocus = Focus_1.createFocus(f => menuBlurWaiter(!f));
+            const menuFocus = Focus_2.createFocus(f => menuBlurWaiter(!f));
             const onClickButton = () => __awaiter(this, void 0, void 0, function* () {
                 isMenuOpen(true);
                 const toFocus = yield firstMenuItemWaiter.get();
