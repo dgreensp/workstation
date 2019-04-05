@@ -7,7 +7,9 @@ import React, {
   ReactElement,
 } from 'react'
 import ReactDOM from 'react-dom'
-import { useOnce, DOMReceiver } from 'lib/live'
+import { useOnce, createLiveVar } from 'lib/live'
+import { EventStopper } from './EventStopper'
+import { createFocus } from './Focus'
 
 // a private context used to communicate between OverlayManager and
 // OverlayPortal
@@ -23,8 +25,17 @@ export interface OverlayManagerProps {
 }
 
 export function OverlayManager({ children }: OverlayManagerProps) {
-  const { context, containerRef } = useOnce(() => {
+  const { context, containerRef, mainAppRef } = useOnce(() => {
     let container: HTMLElement | null = null
+    let mainApp: HTMLElement | null = null
+    /*const containerFocus = createFocus(isContainerFocused => {
+      if (!mainApp) return
+      if (isContainerFocused) {
+        mainApp.setAttribute('aria-hidden', 'true')
+      } else {
+        //mainApp.removeAttribute('aria-hidden')
+      }
+    })*/
     const context = {
       attachDiv(div: HTMLElement, level: number, exclusive = false) {
         if (!container) return
@@ -52,12 +63,16 @@ export function OverlayManager({ children }: OverlayManagerProps) {
     }
     const containerRef = (element: HTMLElement | null) => {
       container = element
+      //containerFocus.targetElement(element)
     }
-    return { context, containerRef }
+    const mainAppRef = (element: HTMLElement | null) => {
+      mainApp = element
+    }
+    return { context, containerRef, mainAppRef }
   })
   return (
     <Context.Provider value={context}>
-      {children}
+      <div ref={mainAppRef}>{children}</div>
       <div ref={containerRef} />
     </Context.Provider>
   )
@@ -98,5 +113,8 @@ export function OverlayPortal({
     }
   }, [level])
   // always create a portal, but conditionally render the children in it.
-  return ReactDOM.createPortal(divAttached ? children : null, div)
+  return ReactDOM.createPortal(
+    divAttached ? <EventStopper>{children}</EventStopper> : null,
+    div
+  )
 }

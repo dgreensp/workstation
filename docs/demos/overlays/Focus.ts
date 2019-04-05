@@ -8,19 +8,45 @@ export interface Focus {
 // https://github.com/facebook/react/issues/11405
 // https://github.com/Microsoft/TSJS-lib-generator/pull/369
 
-export function createFocus(setIsFocusWithin: (isFocusWithin: boolean, event: FocusEvent) => void): Focus {
+export function createFocus(setIsFocusWithin: Receiver<boolean>, DEBUG: string): Focus {
   let element: HTMLElement | null = null
+  let focusIsWithin = false
+  let focusOutCheckTimer: ReturnType<typeof setTimeout> | undefined
+
+  function focusOutCheck() {
+    const newFocusIsWithin = element ? element.contains(document.activeElement) : false
+    if (focusIsWithin && !newFocusIsWithin) {
+      focusIsWithin = false
+      setIsFocusWithin(focusIsWithin)
+    }
+  }
+
+  function scheduleFocusOutCheck() {
+    if (!focusOutCheckTimer) {
+      focusOutCheckTimer = setTimeout(() => {
+        focusOutCheckTimer = undefined
+        focusOutCheck()
+      }, 0)
+    }
+  }
+
+  function clearFocusOutCheck() {
+    if (focusOutCheckTimer) {
+      clearTimeout(focusOutCheckTimer)
+      focusOutCheckTimer = undefined
+    }
+  }
 
   function onFocusIn(this: HTMLElement, e: FocusEvent) {
-    if (!this.contains(e.relatedTarget as Element)) {
-      setIsFocusWithin(true, e)
+    clearFocusOutCheck()
+    if (!focusIsWithin) {
+      focusIsWithin = true
+      setIsFocusWithin(true)
     }
   }
   function onFocusOut(this: HTMLElement, e: FocusEvent) {
-    console.log(this, e.relatedTarget)
-    if (!this.contains(e.relatedTarget as Element)) {
-      setIsFocusWithin(false, e)
-    }
+    console.log(e.relatedTarget)
+    scheduleFocusOutCheck()
   }
 
   const targetElement = (newElement: HTMLElement | null) => {

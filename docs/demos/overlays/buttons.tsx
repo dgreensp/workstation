@@ -3,11 +3,14 @@ import ReactDOM from 'react-dom'
 import { OverlayManager, OverlayPortal } from './OverlayPortal'
 import { useOnce, createLiveVar, Listen, Receiver } from 'lib/live'
 import { createFocus } from './Focus'
+import { createFocusTrap } from './FocusTrap'
 
 function App() {
+  const focusTrap = useOnce(() => createFocusTrap())
   return (
     <OverlayManager>
-      <div className="buttonContainer">
+      This should be hidden
+      <div className="buttonContainer" ref={focusTrap.containerElement}>
         <MenuButton name="Apples" />
         <MenuButton name="Banana" />
       </div>
@@ -50,7 +53,7 @@ function MenuButton({ name }: { name: string }) {
     const isMenuOpen = createLiveVar(false)
     const firstMenuItemWaiter = createWaiter<HTMLElement>()
     const menuBlurWaiter = createWaiter()
-    const menuFocus = createFocus(f => menuBlurWaiter(!f))
+    const menuFocus = createFocus(f => menuBlurWaiter(!f), name)
     const onClickButton = async () => {
       isMenuOpen(true)
       const toFocus = await firstMenuItemWaiter.get()
@@ -62,6 +65,8 @@ function MenuButton({ name }: { name: string }) {
     return { isMenuOpen, firstMenuItemWaiter, onClickButton, menuFocus, menuButton }
   })
 
+  const onButtonMouseDown = useCallback(e => { e.target.focus(); e.preventDefault(); }, [])
+
   return (
     <>
       <button
@@ -69,6 +74,7 @@ function MenuButton({ name }: { name: string }) {
         aria-haspopup={true}
         aria-expanded={false}
         ref={menuButton}
+        tabIndex={0}
       >
         {name}
       </button>
@@ -82,13 +88,14 @@ function MenuButton({ name }: { name: string }) {
                   role="menuitem"
                   tabIndex={-1}
                   ref={firstMenuItemWaiter}
+                  onMouseDown={onButtonMouseDown}
                 >
                   {name} Item 1
                 </button>
-                <button className="menuItem" role="menuitem" tabIndex={-1}>
+                <button className="menuItem" role="menuitem" tabIndex={-1} onMouseDown={onButtonMouseDown}>
                   {name} Item 2
                 </button>
-                <button className="menuItem" role="menuitem" tabIndex={-1}>
+                <button className="menuItem" role="menuitem" tabIndex={-1} onMouseDown={onButtonMouseDown}>
                   {name} Item 3
                 </button>
               </div>
