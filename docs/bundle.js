@@ -1185,11 +1185,12 @@ define("demos/overlays/index", ["require", "exports", "react", "react-dom", "rea
     react_6 = __importDefault(react_6);
     react_dom_3 = __importDefault(react_dom_3);
     function App() {
-        const MyHoverPopover = live_4.useOnce(() => HoverPopover_1.createHoverPopover());
+        const MyHoverPopover1 = live_4.useOnce(() => HoverPopover_1.createHoverPopover());
+        const MyHoverPopover2 = live_4.useOnce(() => HoverPopover_1.createHoverPopover());
         return (react_6.default.createElement(OverlayPortal_2.OverlayManager, null,
             react_6.default.createElement("main", { role: "main", className: "container mt-5" },
                 react_6.default.createElement("h1", null, "Hello, Reactstrap!"),
-                react_6.default.createElement(reactstrap_2.Alert, { color: "primary", innerRef: MyHoverPopover.triggerElement },
+                react_6.default.createElement(reactstrap_2.Alert, { color: "primary", innerRef: MyHoverPopover1.triggerElement },
                     "This is a primary alert \u2014 check it out!",
                     react_6.default.createElement(OverlayPortal_2.OverlayPortal, { level: 1000 },
                         react_6.default.createElement("div", { style: { position: 'absolute', top: 0 } }, "Hello")),
@@ -1199,9 +1200,11 @@ define("demos/overlays/index", ["require", "exports", "react", "react-dom", "rea
                         react_6.default.createElement("div", { style: { position: 'absolute', top: 200 } }, "Hello 2")),
                     react_6.default.createElement(OverlayPortal_2.OverlayPortal, { level: 2000, exclusive: true },
                         react_6.default.createElement("div", { style: { position: 'absolute', top: 300 } }, "Hello 4"))),
-                react_6.default.createElement(MyHoverPopover, null,
+                react_6.default.createElement(MyHoverPopover1, null,
                     react_6.default.createElement("div", { style: { fontSize: 36, background: 'red' } }, "Hello!")),
-                react_6.default.createElement("div", { style: { position: 'absolute', bottom: 0, right: 0 } }))));
+                react_6.default.createElement(reactstrap_2.Alert, { color: "primary", innerRef: MyHoverPopover2.triggerElement }, "This is a primary alert \u2014 check it out!"),
+                react_6.default.createElement(MyHoverPopover2, null,
+                    react_6.default.createElement("div", { style: { fontSize: 36, background: 'green' } }, "World!")))));
     }
     const root = document.getElementById('root');
     react_dom_3.default.render(react_6.default.createElement(App, null), root);

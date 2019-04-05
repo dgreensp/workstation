@@ -6,12 +6,13 @@ import { useOnce } from 'lib/live'
 import { createHoverPopover } from './HoverPopover'
 
 function App() {
-  const MyHoverPopover = useOnce(() => createHoverPopover())
+  const MyHoverPopover1 = useOnce(() => createHoverPopover())
+  const MyHoverPopover2 = useOnce(() => createHoverPopover())
   return (
     <OverlayManager>
       <main role="main" className="container mt-5">
         <h1>Hello, Reactstrap!</h1>
-        <Alert color="primary" innerRef={MyHoverPopover.triggerElement}>
+        <Alert color="primary" innerRef={MyHoverPopover1.triggerElement}>
           This is a primary alert — check it out!
           <OverlayPortal level={1000}>
             <div style={{ position: 'absolute', top: 0 }}>Hello</div>
@@ -26,10 +27,15 @@ function App() {
             <div style={{ position: 'absolute', top: 300 }}>Hello 4</div>
           </OverlayPortal>
         </Alert>
-        <MyHoverPopover>
+        <MyHoverPopover1>
           <div style={{ fontSize: 36, background: 'red' }}>Hello!</div>
-        </MyHoverPopover>
-        <div style={{ position: 'absolute', bottom: 0, right: 0 }} />
+        </MyHoverPopover1>
+        <Alert color="primary" innerRef={MyHoverPopover2.triggerElement}>
+          This is a primary alert — check it out!
+        </Alert>
+        <MyHoverPopover2>
+          <div style={{ fontSize: 36, background: 'green' }}>World!</div>
+        </MyHoverPopover2>
       </main>
     </OverlayManager>
   )
