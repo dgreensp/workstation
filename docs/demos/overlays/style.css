@@ -1,1 +1,15 @@
-/* empty */
+.myDropdownButton {
+  cursor: pointer;
+}
+
+.myDropdownButton:hover, .myDropdownButton:focus {
+  background: #ddd;
+  outline: 0;
+}
+
+.myDropdownMenu {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 5px;
+  cursor: pointer;
+}

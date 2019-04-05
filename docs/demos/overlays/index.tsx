@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useCallback, ReactNode } from 'react'
 import ReactDOM from 'react-dom'
 import { Alert } from 'reactstrap'
 import { OverlayManager, OverlayPortal } from './OverlayPortal'
-import { useOnce } from 'lib/live'
+import { useOnce, createLiveVar, Listen } from 'lib/live'
 import { createHoverPopover } from './HoverPopover'
 
 function App() {
@@ -36,8 +36,49 @@ function App() {
         <MyHoverPopover2>
           <div style={{ fontSize: 36, background: 'green' }}>World!</div>
         </MyHoverPopover2>
+        <DropdownButton />
       </main>
     </OverlayManager>
+  )
+}
+
+function DropdownButton() {
+  const isTriggerFocused = useOnce(() => createLiveVar(false))
+  const isOverlayFocused = useOnce(() => createLiveVar(false))
+  const onFocusTrigger = useCallback(() => isTriggerFocused(true), [])
+  const onBlurTrigger = useCallback(e => {
+    isTriggerFocused(false)
+    console.log(e.relatedTarget)
+  }, [])
+  const onFocusInDropdown = useCallback(() => isOverlayFocused(true), [])
+  const onFocusOutDropdown = useCallback(() => isOverlayFocused(false), [])
+  return (
+    <>
+      <div
+        className="myDropdownButton"
+        tabIndex={0}
+        onFocus={onFocusTrigger}
+        onBlur={onBlurTrigger}
+      >
+        Dropdown
+      </div>
+      <Listen to={{ isTriggerFocused, isOverlayFocused }}>
+        {({ isTriggerFocused, isOverlayFocused }) =>
+          isTriggerFocused || isOverlayFocused ? (
+            <OverlayPortal level={999}>
+              <div
+                onFocus={onFocusInDropdown}
+                onBlur={onFocusOutDropdown}
+                tabIndex={0}
+                className="myDropdownMenu"
+              >
+                Dropdown
+              </div>
+            </OverlayPortal>
+          ) : null
+        }
+      </Listen>
+    </>
   )
 }
 

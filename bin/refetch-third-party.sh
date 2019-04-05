@@ -106,4 +106,8 @@ curl_amd () {
   mkdir prosemirror-commands
   curl_amd prosemirror-commands/index.js prosemirror-commands https://unpkg.com/prosemirror-commands@1.0.7/dist/commands.js
   $CURL -o prosemirror-commands/index.d.ts https://unpkg.com/@types/prosemirror-commands@1.0.1/index.d.ts
+
+  mkdir tabbable
+  curl_amd tabbable/index.js tabbable https://unpkg.com/tabbable@4.0.0/index.js
+  $CURL -o tabbable/index.d.ts https://unpkg.com/@types/tabbable@3.1.0/index.d.ts
 )

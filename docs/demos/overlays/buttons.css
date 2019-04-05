@@ -1,0 +1,17 @@
+.buttonContainer {
+  padding-top: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.buttonContainer > button {
+  margin-bottom: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.buttonContainer > button:focus {
+  outline: 2px solid #9cf;
+}
+
+.menuItem:focus {
+  outline: 2px solid #9cf !important;
+}

@@ -9,7 +9,7 @@ export interface HoverPopover {
 }
 
 export interface HoverPopoverProps {
-  children: ReactNode
+  children?: ReactNode
 }
 
 const HOVER_POPOVER_LEVEL = 1000

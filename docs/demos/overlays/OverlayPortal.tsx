@@ -19,7 +19,7 @@ interface OverlayManagerContext {
 const Context = createContext<OverlayManagerContext | null>(null)
 
 export interface OverlayManagerProps {
-  children: ReactNode
+  children?: ReactNode
 }
 
 export function OverlayManager({ children }: OverlayManagerProps) {
@@ -66,7 +66,7 @@ export function OverlayManager({ children }: OverlayManagerProps) {
 export interface OverlayPortalProps {
   level: number
   exclusive?: boolean
-  children: ReactNode
+  children?: ReactNode
 }
 export function OverlayPortal({
   level,

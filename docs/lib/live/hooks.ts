@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Receiver } from './Receiver'
 import { Listenable } from './Listenable'
 
@@ -21,20 +21,12 @@ export function useLiveVar<T>(initialValue: () => T): LiveVar<T> {
 }*/
 
 export function useListen<T>(v: Listenable<T>): T {
-  const [state, setState] = useState<T>()
-  const ref = useRef<{ lastVar: Listenable<T>; receiver: Receiver<T> }>()
-  if (ref.current) {
-    const { lastVar, receiver } = ref.current
-    if (lastVar === v) {
-      return state!
+  const [, setState] = useState<T>(() => v.peek())
+  useEffect(() => {
+    v.listen(setState)
+    return () => {
+      v.unlisten(setState)
     }
-    lastVar.unlisten(receiver)
-    ref.current.lastVar = v
-  } else {
-    ref.current = { lastVar: v, receiver: setState }
-  }
-  const value = v.peek()
-  setState(value)
-  v.listen(ref.current.receiver)
-  return value
+  }, [v])
+  return v.peek()
 }
