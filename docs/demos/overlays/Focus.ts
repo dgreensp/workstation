@@ -7,46 +7,34 @@ export interface Focus {
 // https://github.com/facebook/react/issues/6410
 // https://github.com/facebook/react/issues/11405
 // https://github.com/Microsoft/TSJS-lib-generator/pull/369
+// https://reactjs.org/docs/accessibility.html#mouse-and-pointer-events
 
-export function createFocus(setIsFocusWithin: Receiver<boolean>, DEBUG: string): Focus {
+export function createFocus(setIsFocusWithin: Receiver<boolean>): Focus {
   let element: HTMLElement | null = null
   let focusIsWithin = false
   let focusOutCheckTimer: ReturnType<typeof setTimeout> | undefined
 
-  function focusOutCheck() {
-    const newFocusIsWithin = element ? element.contains(document.activeElement) : false
-    if (focusIsWithin && !newFocusIsWithin) {
-      focusIsWithin = false
-      setIsFocusWithin(focusIsWithin)
-    }
-  }
-
-  function scheduleFocusOutCheck() {
-    if (!focusOutCheckTimer) {
-      focusOutCheckTimer = setTimeout(() => {
-        focusOutCheckTimer = undefined
-        focusOutCheck()
-      }, 0)
-    }
-  }
-
-  function clearFocusOutCheck() {
-    if (focusOutCheckTimer) {
-      clearTimeout(focusOutCheckTimer)
-      focusOutCheckTimer = undefined
-    }
-  }
-
   function onFocusIn(this: HTMLElement, e: FocusEvent) {
-    clearFocusOutCheck()
+    clearTimeout(focusOutCheckTimer)
+    focusOutCheckTimer = undefined
     if (!focusIsWithin) {
       focusIsWithin = true
       setIsFocusWithin(true)
     }
   }
   function onFocusOut(this: HTMLElement, e: FocusEvent) {
-    console.log(e.relatedTarget)
-    scheduleFocusOutCheck()
+    if (!focusOutCheckTimer) {
+      focusOutCheckTimer = setTimeout(() => {
+        focusOutCheckTimer = undefined
+        const newFocusIsWithin = element
+          ? element.contains(document.activeElement)
+          : false
+        if (focusIsWithin && !newFocusIsWithin) {
+          focusIsWithin = false
+          setIsFocusWithin(focusIsWithin)
+        }
+      }, 0)
+    }
   }
 
   const targetElement = (newElement: HTMLElement | null) => {

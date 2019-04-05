@@ -1034,41 +1034,32 @@ define("demos/overlays/Focus", ["require", "exports"], function (require, export
     // https://github.com/facebook/react/issues/6410
     // https://github.com/facebook/react/issues/11405
     // https://github.com/Microsoft/TSJS-lib-generator/pull/369
-    function createFocus(setIsFocusWithin, DEBUG) {
+    // https://reactjs.org/docs/accessibility.html#mouse-and-pointer-events
+    function createFocus(setIsFocusWithin) {
         let element = null;
         let focusIsWithin = false;
         let focusOutCheckTimer;
-        function focusOutCheck() {
-            const newFocusIsWithin = element ? element.contains(document.activeElement) : false;
-            if (focusIsWithin && !newFocusIsWithin) {
-                focusIsWithin = false;
-                setIsFocusWithin(focusIsWithin);
-            }
-        }
-        function scheduleFocusOutCheck() {
-            if (!focusOutCheckTimer) {
-                focusOutCheckTimer = setTimeout(() => {
-                    focusOutCheckTimer = undefined;
-                    focusOutCheck();
-                }, 0);
-            }
-        }
-        function clearFocusOutCheck() {
-            if (focusOutCheckTimer) {
-                clearTimeout(focusOutCheckTimer);
-                focusOutCheckTimer = undefined;
-            }
-        }
         function onFocusIn(e) {
-            clearFocusOutCheck();
+            clearTimeout(focusOutCheckTimer);
+            focusOutCheckTimer = undefined;
             if (!focusIsWithin) {
                 focusIsWithin = true;
                 setIsFocusWithin(true);
             }
         }
         function onFocusOut(e) {
-            console.log(e.relatedTarget);
-            scheduleFocusOutCheck();
+            if (!focusOutCheckTimer) {
+                focusOutCheckTimer = setTimeout(() => {
+                    focusOutCheckTimer = undefined;
+                    const newFocusIsWithin = element
+                        ? element.contains(document.activeElement)
+                        : false;
+                    if (focusIsWithin && !newFocusIsWithin) {
+                        focusIsWithin = false;
+                        setIsFocusWithin(focusIsWithin);
+                    }
+                }, 0);
+            }
         }
         const targetElement = (newElement) => {
             if (newElement === element) {
@@ -1342,7 +1333,7 @@ define("demos/overlays/buttons", ["require", "exports", "react", "react-dom", "d
             const isMenuOpen = live_4.createLiveVar(false);
             const firstMenuItemWaiter = createWaiter();
             const menuBlurWaiter = createWaiter();
-            const menuFocus = Focus_1.createFocus(f => menuBlurWaiter(!f), name);
+            const menuFocus = Focus_1.createFocus(f => menuBlurWaiter(!f));
             const onClickButton = () => __awaiter(this, void 0, void 0, function* () {
                 isMenuOpen(true);
                 const toFocus = yield firstMenuItemWaiter.get();
@@ -1351,9 +1342,18 @@ define("demos/overlays/buttons", ["require", "exports", "react", "react-dom", "d
                 isMenuOpen(false);
             });
             const menuButton = react_7.useRef(null);
-            return { isMenuOpen, firstMenuItemWaiter, onClickButton, menuFocus, menuButton };
+            return {
+                isMenuOpen,
+                firstMenuItemWaiter,
+                onClickButton,
+                menuFocus,
+                menuButton,
+            };
         });
-        const onButtonMouseDown = react_7.useCallback(e => { e.target.focus(); e.preventDefault(); }, []);
+        const onButtonMouseDown = react_7.useCallback(e => {
+            e.target.focus();
+            e.preventDefault();
+        }, []);
         return (react_7.default.createElement(react_7.default.Fragment, null,
             react_7.default.createElement("button", { onClick: onClickButton, "aria-haspopup": true, "aria-expanded": false, ref: menuButton, tabIndex: 0 }, name),
             react_7.default.createElement(live_4.Listen, { to: { isMenuOpen } }, ({ isMenuOpen }) => isMenuOpen && (react_7.default.createElement(OverlayPortal_2.OverlayPortal, { level: 1000, exclusive: true },

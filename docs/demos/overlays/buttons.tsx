@@ -53,7 +53,7 @@ function MenuButton({ name }: { name: string }) {
     const isMenuOpen = createLiveVar(false)
     const firstMenuItemWaiter = createWaiter<HTMLElement>()
     const menuBlurWaiter = createWaiter()
-    const menuFocus = createFocus(f => menuBlurWaiter(!f), name)
+    const menuFocus = createFocus(f => menuBlurWaiter(!f))
     const onClickButton = async () => {
       isMenuOpen(true)
       const toFocus = await firstMenuItemWaiter.get()
@@ -62,10 +62,19 @@ function MenuButton({ name }: { name: string }) {
       isMenuOpen(false)
     }
     const menuButton = useRef<HTMLButtonElement>(null)
-    return { isMenuOpen, firstMenuItemWaiter, onClickButton, menuFocus, menuButton }
+    return {
+      isMenuOpen,
+      firstMenuItemWaiter,
+      onClickButton,
+      menuFocus,
+      menuButton,
+    }
   })
 
-  const onButtonMouseDown = useCallback(e => { e.target.focus(); e.preventDefault(); }, [])
+  const onButtonMouseDown = useCallback(e => {
+    e.target.focus()
+    e.preventDefault()
+  }, [])
 
   return (
     <>
@@ -92,10 +101,20 @@ function MenuButton({ name }: { name: string }) {
                 >
                   {name} Item 1
                 </button>
-                <button className="menuItem" role="menuitem" tabIndex={-1} onMouseDown={onButtonMouseDown}>
+                <button
+                  className="menuItem"
+                  role="menuitem"
+                  tabIndex={-1}
+                  onMouseDown={onButtonMouseDown}
+                >
                   {name} Item 2
                 </button>
-                <button className="menuItem" role="menuitem" tabIndex={-1} onMouseDown={onButtonMouseDown}>
+                <button
+                  className="menuItem"
+                  role="menuitem"
+                  tabIndex={-1}
+                  onMouseDown={onButtonMouseDown}
+                >
                   {name} Item 3
                 </button>
               </div>
