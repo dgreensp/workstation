@@ -10,6 +10,8 @@
   background: #ddd;
   touch-action: manipulation;
   padding: 0.25rem 0.25rem;
+  color: inherit;
+  text-align: inherit;
 }
 
 .buttonContainer > button:focus {
@@ -23,6 +25,8 @@
   margin-right: 0.5rem;
   touch-action: manipulation;
   padding: 0.25rem 0.25rem;
+  color: inherit;
+  text-align: inherit;
 }
 
 .menuItem:focus {
