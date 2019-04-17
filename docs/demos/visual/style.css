@@ -1,0 +1,33 @@
+.container {
+  display: flex;
+  align-items: baseline;
+  position: relative;
+}
+
+.item {
+  margin-right: 0.5rem;
+  background: rgba(255, 0,  0, 0.5)
+}
+
+.item1 {
+  font-size: 12px;
+}
+
+.item2 {
+  font-size: 18px;
+}
+
+.front {
+  position: relative;
+  z-index: 1;
+  background: #0c0;
+  opacity: 0.5;
+}
+
+.back {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  width: 0.5rem;
+  background: blue;
+}

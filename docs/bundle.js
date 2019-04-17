@@ -2132,6 +2132,42 @@ define("demos/surface/index", ["require", "exports", "react", "react-dom", "lib/
     const root = document.getElementById('root');
     react_dom_12.default.render(react_25.default.createElement(App, null), root);
 });
+define("demos/visual/baseline", ["require", "exports", "react", "react-dom"], function (require, exports, react_26, react_dom_13) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    react_26 = __importDefault(react_26);
+    react_dom_13 = __importDefault(react_dom_13);
+    function App() {
+        return (react_26.default.createElement("main", { role: "main", className: "container mt-5" },
+            react_26.default.createElement("div", { className: "container" },
+                react_26.default.createElement("div", { className: "item item1" },
+                    react_26.default.createElement("div", { className: "front" }, "Apple"),
+                    react_26.default.createElement("div", { className: "back" })),
+                react_26.default.createElement("div", { className: "item item2" },
+                    react_26.default.createElement("div", { className: "front" }, "Banana"),
+                    react_26.default.createElement("div", { className: "back" })))));
+    }
+    const root = document.getElementById('root');
+    react_dom_13.default.render(react_26.default.createElement(App, null), root);
+});
+define("demos/visual/index", ["require", "exports", "react", "react-dom"], function (require, exports, react_27, react_dom_14) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    react_27 = __importDefault(react_27);
+    react_dom_14 = __importDefault(react_dom_14);
+    function App() {
+        return (react_27.default.createElement("main", { role: "main", className: "container mt-5" },
+            react_27.default.createElement("div", { className: "container" },
+                react_27.default.createElement("div", { className: "item item1" },
+                    react_27.default.createElement("div", { className: "front" }, "Apple"),
+                    react_27.default.createElement("div", { className: "back" })),
+                react_27.default.createElement("div", { className: "item item2" },
+                    react_27.default.createElement("div", { className: "front" }, "Banana"),
+                    react_27.default.createElement("div", { className: "back" })))));
+    }
+    const root = document.getElementById('root');
+    react_dom_14.default.render(react_27.default.createElement(App, null), root);
+});
 /**
  * Copyright Marc J. Schmidt. See the LICENSE file at the top-level
  * directory of this distribution and at
